@@ -119,7 +119,7 @@ body.list-mode .apps-grid{grid-template-columns:1fr}body.compact .app-card p{dis
     <button class="hide-btn" data-hide-app="walkie" aria-label="Ocultar da tela inicial">👁</button>
   </div>
 </article>
-<article class="app-card" data-id="calorias" data-name="minhas calorias" data-category="Saúde" data-folder="Pessoal" data-status="Em desenvolvimento" style="--app-color:#10b981">
+<article class="app-card" data-id="calorias" data-name="minhas calorias" data-category="Saúde" data-folder="Pessoal" data-status="Estável" style="--app-color:#10b981">
   <div class="app-head">
     <div class="app-icon">🍎</div>
     <button class="fav-btn on" data-fav="calorias" aria-label="Favoritar">★</button>
@@ -129,7 +129,7 @@ body.list-mode .apps-grid{grid-template-columns:1fr}body.compact .app-card p{dis
   <div class="tags">
     <span class="tag">Saúde</span>
     <span class="tag">Pessoal</span>
-    <span class="tag status-dev">Em desenvolvimento</span>
+    <span class="tag status-estavel">Estável</span>
   </div>
   <div class="app-actions">
     <a class="open-btn" data-open="calorias" href="https://kaua212106.github.io/Contagem-de-calorias-/">Abrir</a>
@@ -209,7 +209,7 @@ body.list-mode .apps-grid{grid-template-columns:1fr}body.compact .app-card p{dis
     <button class="hide-btn" data-hide-app="conhecimento" aria-label="Ocultar da tela inicial">👁</button>
   </div>
 </article>
-<article class="app-card" data-id="financas" data-name="minhas finanças" data-category="Finanças" data-folder="Pessoal" data-status="Em desenvolvimento" style="--app-color:#10b981">
+<article class="app-card" data-id="financas" data-name="minhas finanças" data-category="Finanças" data-folder="Pessoal" data-status="Estável" style="--app-color:#10b981">
   <div class="app-head">
     <div class="app-icon">R$</div>
     <button class="fav-btn on" data-fav="financas" aria-label="Favoritar">★</button>
@@ -219,7 +219,7 @@ body.list-mode .apps-grid{grid-template-columns:1fr}body.compact .app-card p{dis
   <div class="tags">
     <span class="tag">Finanças</span>
     <span class="tag">Pessoal</span>
-    <span class="tag status-dev">Em desenvolvimento</span>
+    <span class="tag status-estavel">Estável</span>
   </div>
   <div class="app-actions">
     <a class="open-btn" data-open="financas" href="https://kaua212106.github.io/Organiza-o-financeira/">Abrir</a>
@@ -352,7 +352,7 @@ body.list-mode .apps-grid{grid-template-columns:1fr}body.compact .app-card p{dis
 <div class="toast" id="toast"></div>
 
 <script>
-const APPS=[{"id": "walkie", "name": "Walkie", "desc": "Aplicativo de comunicação e conversas.", "icon": "💬", "category": "Comunicação", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Walkie/", "color": "#667eea", "favorite": false}, {"id": "calorias", "name": "Minhas Calorias", "desc": "Controle de alimentação, calorias, água e progresso.", "icon": "🍎", "category": "Saúde", "folder": "Pessoal", "status": "Em desenvolvimento", "url": "https://kaua212106.github.io/Contagem-de-calorias-/", "color": "#10b981", "favorite": false}, {"id": "devkit", "name": "DevKit", "desc": "Kit do desenvolvedor para criar, revisar e organizar PWAs.", "icon": "</>", "category": "Desenvolvimento", "folder": "Desenvolvimento", "status": "Estável", "url": "https://kaua212106.github.io/Central-de-html/", "color": "#3b82f6", "favorite": false}, {"id": "cofre", "name": "Meu Cofre", "desc": "Cofre pessoal para documentos, arquivos e informações.", "icon": "🔐", "category": "Utilidades", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Cofre-de-documentos/", "color": "#764ba2", "favorite": false}, {"id": "ritmo", "name": "Ritmo", "desc": "Hábitos, metas e acompanhamento do progresso pessoal.", "icon": "◎", "category": "Hábitos", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Ritmo/", "color": "#2ca574", "favorite": false}, {"id": "conhecimento", "name": "Meu Conhecimento", "desc": "Segundo cérebro pessoal para estudo e organização.", "icon": "🧠", "category": "Estudos", "folder": "Estudos", "status": "Estável", "url": "https://kaua212106.github.io/Meus-conhecimentos/", "color": "#8956ed", "favorite": false}, {"id": "financas", "name": "Minhas Finanças", "desc": "Controle financeiro, metas, carteira e investimentos.", "icon": "R$", "category": "Finanças", "folder": "Pessoal", "status": "Em desenvolvimento", "url": "https://kaua212106.github.io/Organiza-o-financeira/", "color": "#10b981", "favorite": false}, {"id": "agenda", "name": "Agenda de Tarefas", "desc": "Tarefas, calendário, horários e Pomodoro.", "icon": "✓", "category": "Produtividade", "folder": "Organização", "status": "Estável", "url": "https://kaua212106.github.io/Agenda-de-tarefas/", "color": "#f59e0b", "favorite": false}, {"id": "links", "name": "Central de Links", "desc": "Organize, pesquise e acesse seus links favoritos em um só lugar.", "icon": "🔗", "category": "Utilidades", "folder": "Organização", "status": "Estável", "url": "https://kaua212106.github.io/Central-de-links/", "color": "#3b82f6", "favorite": false}, {"id": "informacoes", "name": "Lista de Informações", "desc": "Organize e consulte informações importantes em um só lugar.", "icon": "🗂️", "category": "Utilidades", "folder": "Organização", "status": "Estável", "url": "https://kaua212106.github.io/Lista-de-informa-es-/", "color": "#6366f1", "favorite": false}, {"id": "filmes", "name": "Lista de Filmes", "desc": "Organize filmes, acompanhe o que já assistiu e o que quer ver.", "icon": "🎬", "category": "Entretenimento", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Lista-de-filmes/", "color": "#ef4444", "favorite": false}];
+const APPS=[{"id": "walkie", "name": "Walkie", "desc": "Aplicativo de comunicação e conversas.", "icon": "💬", "category": "Comunicação", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Walkie/", "color": "#667eea", "favorite": false}, {"id": "calorias", "name": "Minhas Calorias", "desc": "Controle de alimentação, calorias, água e progresso.", "icon": "🍎", "category": "Saúde", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Contagem-de-calorias-/", "color": "#10b981", "favorite": false}, {"id": "devkit", "name": "DevKit", "desc": "Kit do desenvolvedor para criar, revisar e organizar PWAs.", "icon": "</>", "category": "Desenvolvimento", "folder": "Desenvolvimento", "status": "Estável", "url": "https://kaua212106.github.io/Central-de-html/", "color": "#3b82f6", "favorite": false}, {"id": "cofre", "name": "Meu Cofre", "desc": "Cofre pessoal para documentos, arquivos e informações.", "icon": "🔐", "category": "Utilidades", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Cofre-de-documentos/", "color": "#764ba2", "favorite": false}, {"id": "ritmo", "name": "Ritmo", "desc": "Hábitos, metas e acompanhamento do progresso pessoal.", "icon": "◎", "category": "Hábitos", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Ritmo/", "color": "#2ca574", "favorite": false}, {"id": "conhecimento", "name": "Meu Conhecimento", "desc": "Segundo cérebro pessoal para estudo e organização.", "icon": "🧠", "category": "Estudos", "folder": "Estudos", "status": "Estável", "url": "https://kaua212106.github.io/Meus-conhecimentos/", "color": "#8956ed", "favorite": false}, {"id": "financas", "name": "Minhas Finanças", "desc": "Controle financeiro, metas, carteira e investimentos.", "icon": "R$", "category": "Finanças", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Organiza-o-financeira/", "color": "#10b981", "favorite": false}, {"id": "agenda", "name": "Agenda de Tarefas", "desc": "Tarefas, calendário, horários e Pomodoro.", "icon": "✓", "category": "Produtividade", "folder": "Organização", "status": "Estável", "url": "https://kaua212106.github.io/Agenda-de-tarefas/", "color": "#f59e0b", "favorite": false}, {"id": "links", "name": "Central de Links", "desc": "Organize, pesquise e acesse seus links favoritos em um só lugar.", "icon": "🔗", "category": "Utilidades", "folder": "Organização", "status": "Estável", "url": "https://kaua212106.github.io/Central-de-links/", "color": "#3b82f6", "favorite": false}, {"id": "informacoes", "name": "Lista de Informações", "desc": "Organize e consulte informações importantes em um só lugar.", "icon": "🗂️", "category": "Utilidades", "folder": "Organização", "status": "Estável", "url": "https://kaua212106.github.io/Lista-de-informa-es-/", "color": "#6366f1", "favorite": false}, {"id": "filmes", "name": "Lista de Filmes", "desc": "Organize filmes, acompanhe o que já assistiu e o que quer ver.", "icon": "🎬", "category": "Entretenimento", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Lista-de-filmes/", "color": "#ef4444", "favorite": false}];
 const STORAGE="central-publica-v10";
 const $=id=>document.getElementById(id);
 let prefs={favorites:null,recent:[],hidden:[],dark:false,list:false,compact:false};
@@ -546,7 +546,7 @@ $("installBtn").onclick=async()=>{
 
 let reg=null;
 if("serviceWorker" in navigator){
-  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=18",{updateViaCache:"none"})}catch{}})
+  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=19",{updateViaCache:"none"})}catch{}})
 }
 $("checkUpdateBtn").onclick=async()=>{if(!reg)return toast("Service worker ainda não está pronto.");try{await reg.update();toast("Verificação concluída.")}catch{toast("Não foi possível verificar.")}};
 
