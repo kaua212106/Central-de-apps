@@ -73,7 +73,7 @@ body.list-mode .apps-grid{grid-template-columns:1fr}body.compact .app-card p{dis
   <div class="hero"><h2>Meus aplicativos</h2><p>Tudo que você criou, organizado em um só lugar.</p></div>
 
   <div class="dashboard">
-    <div class="dash"><b id="totalCount">8</b><small>Projetos</small></div>
+    <div class="dash"><b id="totalCount">8</b><small>Apps</small></div>
     <div class="dash"><b id="favoriteCount">0</b><small>Favoritos</small></div>
   </div>
 
@@ -325,7 +325,7 @@ function syncFavoriteButtons(){
     const on=prefs.favorites.includes(b.dataset.fav);b.classList.toggle("on",on);b.textContent=on?"★":"☆"
   });
   const visibleIds=APPS.filter(a=>!prefs.hidden.includes(a.id)).map(a=>a.id);
-  $("totalCount").textContent=visibleIds.length;
+  $("totalCount").textContent=APPS.length;
   $("favoriteCount").textContent=prefs.favorites.filter(id=>visibleIds.includes(id)).length
 }
 
@@ -487,7 +487,7 @@ $("installBtn").onclick=async()=>{
 
 let reg=null;
 if("serviceWorker" in navigator){
-  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=14",{updateViaCache:"none"})}catch{}})
+  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=15",{updateViaCache:"none"})}catch{}})
 }
 $("checkUpdateBtn").onclick=async()=>{if(!reg)return toast("Service worker ainda não está pronto.");try{await reg.update();toast("Verificação concluída.")}catch{toast("Não foi possível verificar.")}};
 
