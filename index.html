@@ -360,7 +360,11 @@ function syncHideButtons(){
 
 function cloneCard(id){
   const original=$("appsGrid").querySelector(`[data-id="${id}"]`);
-  return original?original.cloneNode(true):null
+  if(!original)return null;
+  const clone=original.cloneNode(true);
+  clone.hidden=false;
+  clone.removeAttribute("hidden");
+  return clone
 }
 
 function renderFavorites(){
@@ -506,7 +510,7 @@ $("installBtn").onclick=async()=>{
 
 let reg=null;
 if("serviceWorker" in navigator){
-  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=16",{updateViaCache:"none"})}catch{}})
+  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=17",{updateViaCache:"none"})}catch{}})
 }
 $("checkUpdateBtn").onclick=async()=>{if(!reg)return toast("Service worker ainda não está pronto.");try{await reg.update();toast("Verificação concluída.")}catch{toast("Não foi possível verificar.")}};
 
