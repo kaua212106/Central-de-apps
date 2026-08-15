@@ -21,8 +21,21 @@ button,input,select{font:inherit;outline:none}button{border:0;cursor:pointer}a{c
 .brand{text-align:center;color:#fff;min-width:0}.brand h1{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.brand small{display:block;font-size:9px;opacity:.82;margin-top:2px}
 .icon-btn{width:42px;height:42px;border-radius:13px;background:rgba(255,255,255,.95);color:#34405a;display:grid;place-items:center;font-size:20px;box-shadow:0 6px 16px rgba(24,29,72,.12)}
 .page{display:none}.page.active{display:block}.hero{color:#fff;margin:3px 2px 16px}.hero h2{font-size:25px}.hero p{font-size:12px;opacity:.88;margin-top:5px}
-.dashboard{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:18px}.dash{background:var(--surface);border-radius:22px;padding:25px 8px;text-align:center;box-shadow:var(--shadow)}.dash b{display:block;font-size:29px;color:var(--primary)}.dash small{font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase}
+.dashboard{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-bottom:12px}.dash{background:var(--surface);border-radius:18px;padding:15px 8px 13px;text-align:center;box-shadow:var(--shadow)}.dash b{display:block;font-size:24px;line-height:1;color:var(--primary);margin-bottom:4px}.dash small{font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:18px 16px;margin-bottom:14px;box-shadow:var(--shadow)}.section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px}.section-title h2{font-size:18px}.mini-link{background:transparent;color:var(--primary);font-size:11px;font-weight:800}
+
+.home-compact{padding:13px 14px;margin-bottom:10px;border-radius:20px}
+.home-compact .section-title{margin-bottom:8px}
+.home-compact .section-title h2{font-size:16px}
+.home-compact .mini-link{font-size:10px}
+.home-compact .tag{font-size:8px;padding:4px 7px}
+.home-compact .mini-apps{gap:6px}
+.home-compact .mini-app{border-radius:13px;padding:7px 4px}
+.home-compact .mini-app span{width:30px;height:30px;border-radius:10px;margin-bottom:4px;font-size:16px}
+.home-compact .mini-app b{font-size:8px}
+.home-compact .mini-app small{font-size:7px;margin-top:1px}
+.home-compact .empty{padding:14px 10px;border-radius:14px;font-size:10px}
+
 .mini-apps{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.mini-app{background:var(--soft);border:1px solid var(--border);border-radius:16px;padding:10px 5px;text-align:center}.mini-app span{display:grid;place-items:center;width:36px;height:36px;border-radius:12px;margin:0 auto 6px;background:#fff;font-size:18px}.mini-app b{display:block;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mini-app small{display:block;font-size:8px;color:var(--muted);margin-top:2px}
 .search-wrap{position:relative}.search-wrap>span{position:absolute;left:14px;top:50%;transform:translateY(-50%)}.search{width:100%;min-height:50px;padding:12px 44px;border:1px solid #e1e5ed;border-radius:15px;background:var(--soft)}.search-clear{position:absolute;right:8px;top:8px;width:34px;height:34px;border-radius:10px;background:#eef0f6;color:#6d7587}
 .chips{display:flex;gap:7px;overflow:auto;padding:10px 1px 2px;scrollbar-width:none}.chip{white-space:nowrap;padding:8px 11px;border-radius:999px;background:rgba(102,116,232,.10);color:var(--primaryStrong);font-size:11px;font-weight:800;border:1px solid rgba(102,116,232,.08)}.chip.active{background:var(--primary);color:#fff}
@@ -58,12 +71,12 @@ body.list-mode .apps-grid{grid-template-columns:1fr}body.compact .app-card p{dis
     <div class="dash"><b id="favoriteCount">6</b><small>Favoritos</small></div>
   </div>
 
-  <div class="card">
+  <div class="card home-compact">
     <div class="section-title"><h2>★ Favoritos</h2><button class="mini-link" data-go="favoritesPage">Ver todos</button></div>
     <div class="mini-apps" id="favoriteMini"><a class="mini-app" href="https://kaua212106.github.io/Walkie/" data-open="walkie"><span>💬</span><b>Walkie</b><small>Estável</small></a><a class="mini-app" href="https://kaua212106.github.io/Contagem-de-calorias-/" data-open="calorias"><span>🍎</span><b>Minhas Calorias</b><small>Em desenvolvimento</small></a><a class="mini-app" href="https://kaua212106.github.io/Central-de-html/" data-open="devkit"><span>&lt;/&gt;</span><b>DevKit</b><small>Estável</small></a><a class="mini-app" href="https://kaua212106.github.io/Meus-conhecimentos/" data-open="conhecimento"><span>🧠</span><b>Meu Conhecimento</b><small>Estável</small></a></div>
   </div>
 
-  <div class="card">
+  <div class="card home-compact">
     <div class="section-title"><h2>🕘 Recentes</h2><span class="tag">Últimos abertos</span></div>
     <div class="mini-apps" id="recentMini"><div class="empty" style="grid-column:1/-1">Abra um aplicativo pela Central e ele aparecerá aqui.</div></div>
   </div>
