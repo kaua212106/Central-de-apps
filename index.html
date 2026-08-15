@@ -73,7 +73,7 @@ body.list-mode .apps-grid{grid-template-columns:1fr}body.compact .app-card p{dis
   <div class="hero"><h2>Meus aplicativos</h2><p>Tudo que você criou, organizado em um só lugar.</p></div>
 
   <div class="dashboard">
-    <div class="dash"><b id="totalCount">8</b><small>Apps</small></div>
+    <div class="dash"><b id="totalCount">9</b><small>Apps</small></div>
     <div class="dash"><b id="favoriteCount">0</b><small>Favoritos</small></div>
   </div>
 
@@ -244,7 +244,26 @@ body.list-mode .apps-grid{grid-template-columns:1fr}body.compact .app-card p{dis
     <button class="copy-btn" data-copy="https://kaua212106.github.io/Agenda-de-tarefas/" aria-label="Copiar link">⧉</button>
     <button class="hide-btn" data-hide-app="agenda" aria-label="Ocultar da tela inicial">👁</button>
   </div>
-</article></div>
+</article>
+<article class="app-card" data-id="links" data-name="central de links" data-category="Utilidades" data-folder="Organização" data-status="Estável" style="--app-color:#3b82f6">
+  <div class="app-head">
+    <div class="app-icon">🔗</div>
+    <button class="fav-btn" data-fav="links" aria-label="Favoritar">☆</button>
+  </div>
+  <h3>Central de Links</h3>
+  <p>Organize, pesquise e acesse seus links favoritos em um só lugar.</p>
+  <div class="tags">
+    <span class="tag">Utilidades</span>
+    <span class="tag">Organização</span>
+    <span class="tag status-estavel">Estável</span>
+  </div>
+  <div class="app-actions">
+    <a class="open-btn" data-open="links" href="https://kaua212106.github.io/Central-de-links/">Abrir</a>
+    <button class="copy-btn" data-copy="https://kaua212106.github.io/Central-de-links/" aria-label="Copiar link">⧉</button>
+    <button class="hide-btn" data-hide-app="links" aria-label="Ocultar da tela inicial">👁</button>
+  </div>
+</article>
+</div>
   <div class="empty" id="noResults" hidden>Nenhum aplicativo encontrado.</div>
 </section>
 
@@ -254,7 +273,7 @@ body.list-mode .apps-grid{grid-template-columns:1fr}body.compact .app-card p{dis
 </section>
 
 <section class="page" id="appsPage">
-  <div class="hero"><h2>Todos os apps</h2><p>Os 8 aplicativos disponíveis nesta Central.</p></div>
+  <div class="hero"><h2>Todos os apps</h2><p>Os 9 aplicativos disponíveis nesta Central.</p></div>
   <div class="apps-grid" id="allAppsGrid"></div>
 </section>
 
@@ -297,7 +316,7 @@ body.list-mode .apps-grid{grid-template-columns:1fr}body.compact .app-card p{dis
 <div class="toast" id="toast"></div>
 
 <script>
-const APPS=[{"id": "walkie", "name": "Walkie", "desc": "Aplicativo de comunicação e conversas.", "icon": "💬", "category": "Comunicação", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Walkie/", "color": "#667eea", "favorite": false}, {"id": "calorias", "name": "Minhas Calorias", "desc": "Controle de alimentação, calorias, água e progresso.", "icon": "🍎", "category": "Saúde", "folder": "Pessoal", "status": "Em desenvolvimento", "url": "https://kaua212106.github.io/Contagem-de-calorias-/", "color": "#10b981", "favorite": false}, {"id": "devkit", "name": "DevKit", "desc": "Kit do desenvolvedor para criar, revisar e organizar PWAs.", "icon": "</>", "category": "Desenvolvimento", "folder": "Desenvolvimento", "status": "Estável", "url": "https://kaua212106.github.io/Central-de-html/", "color": "#3b82f6", "favorite": false}, {"id": "cofre", "name": "Meu Cofre", "desc": "Cofre pessoal para documentos, arquivos e informações.", "icon": "🔐", "category": "Utilidades", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Cofre-de-documentos/", "color": "#764ba2", "favorite": false}, {"id": "ritmo", "name": "Ritmo", "desc": "Hábitos, metas e acompanhamento do progresso pessoal.", "icon": "◎", "category": "Hábitos", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Ritmo/", "color": "#2ca574", "favorite": false}, {"id": "conhecimento", "name": "Meu Conhecimento", "desc": "Segundo cérebro pessoal para estudo e organização.", "icon": "🧠", "category": "Estudos", "folder": "Estudos", "status": "Estável", "url": "https://kaua212106.github.io/Meus-conhecimentos/", "color": "#8956ed", "favorite": false}, {"id": "financas", "name": "Minhas Finanças", "desc": "Controle financeiro, metas, carteira e investimentos.", "icon": "R$", "category": "Finanças", "folder": "Pessoal", "status": "Em desenvolvimento", "url": "https://kaua212106.github.io/Organiza-o-financeira/", "color": "#10b981", "favorite": false}, {"id": "agenda", "name": "Agenda de Tarefas", "desc": "Tarefas, calendário, horários e Pomodoro.", "icon": "✓", "category": "Produtividade", "folder": "Organização", "status": "Estável", "url": "https://kaua212106.github.io/Agenda-de-tarefas/", "color": "#f59e0b", "favorite": false}];
+const APPS=[{"id": "walkie", "name": "Walkie", "desc": "Aplicativo de comunicação e conversas.", "icon": "💬", "category": "Comunicação", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Walkie/", "color": "#667eea", "favorite": false}, {"id": "calorias", "name": "Minhas Calorias", "desc": "Controle de alimentação, calorias, água e progresso.", "icon": "🍎", "category": "Saúde", "folder": "Pessoal", "status": "Em desenvolvimento", "url": "https://kaua212106.github.io/Contagem-de-calorias-/", "color": "#10b981", "favorite": false}, {"id": "devkit", "name": "DevKit", "desc": "Kit do desenvolvedor para criar, revisar e organizar PWAs.", "icon": "</>", "category": "Desenvolvimento", "folder": "Desenvolvimento", "status": "Estável", "url": "https://kaua212106.github.io/Central-de-html/", "color": "#3b82f6", "favorite": false}, {"id": "cofre", "name": "Meu Cofre", "desc": "Cofre pessoal para documentos, arquivos e informações.", "icon": "🔐", "category": "Utilidades", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Cofre-de-documentos/", "color": "#764ba2", "favorite": false}, {"id": "ritmo", "name": "Ritmo", "desc": "Hábitos, metas e acompanhamento do progresso pessoal.", "icon": "◎", "category": "Hábitos", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Ritmo/", "color": "#2ca574", "favorite": false}, {"id": "conhecimento", "name": "Meu Conhecimento", "desc": "Segundo cérebro pessoal para estudo e organização.", "icon": "🧠", "category": "Estudos", "folder": "Estudos", "status": "Estável", "url": "https://kaua212106.github.io/Meus-conhecimentos/", "color": "#8956ed", "favorite": false}, {"id": "financas", "name": "Minhas Finanças", "desc": "Controle financeiro, metas, carteira e investimentos.", "icon": "R$", "category": "Finanças", "folder": "Pessoal", "status": "Em desenvolvimento", "url": "https://kaua212106.github.io/Organiza-o-financeira/", "color": "#10b981", "favorite": false}, {"id": "agenda", "name": "Agenda de Tarefas", "desc": "Tarefas, calendário, horários e Pomodoro.", "icon": "✓", "category": "Produtividade", "folder": "Organização", "status": "Estável", "url": "https://kaua212106.github.io/Agenda-de-tarefas/", "color": "#f59e0b", "favorite": false}, {"id": "links", "name": "Central de Links", "desc": "Organize, pesquise e acesse seus links favoritos em um só lugar.", "icon": "🔗", "category": "Utilidades", "folder": "Organização", "status": "Estável", "url": "https://kaua212106.github.io/Central-de-links/", "color": "#3b82f6", "favorite": false}];
 const STORAGE="central-publica-v10";
 const $=id=>document.getElementById(id);
 let prefs={favorites:null,recent:[],hidden:[],dark:false,list:false,compact:false};
@@ -487,7 +506,7 @@ $("installBtn").onclick=async()=>{
 
 let reg=null;
 if("serviceWorker" in navigator){
-  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=15",{updateViaCache:"none"})}catch{}})
+  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=16",{updateViaCache:"none"})}catch{}})
 }
 $("checkUpdateBtn").onclick=async()=>{if(!reg)return toast("Service worker ainda não está pronto.");try{await reg.update();toast("Verificação concluída.")}catch{toast("Não foi possível verificar.")}};
 
