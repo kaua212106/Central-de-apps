@@ -36,6 +36,12 @@ button,input,select{font:inherit;outline:none}button{border:0;cursor:pointer}a{c
 .home-compact .mini-app small{font-size:7px;margin-top:1px}
 .home-compact .empty{padding:14px 10px;border-radius:14px;font-size:10px}
 
+.favorite-help{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--soft);border:1px dashed rgba(102,116,232,.28);border-radius:13px;padding:9px 10px;color:var(--muted)}
+.favorite-help b{font-size:10px;color:var(--primaryStrong);white-space:nowrap}
+.favorite-help span{font-size:9px;line-height:1.35;text-align:right}
+@media(max-width:410px){.favorite-help{display:block}.favorite-help b{display:block;margin-bottom:3px}.favorite-help span{display:block;text-align:left}}
+
+
 .mini-apps{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.mini-app{background:var(--soft);border:1px solid var(--border);border-radius:16px;padding:10px 5px;text-align:center}.mini-app span{display:grid;place-items:center;width:36px;height:36px;border-radius:12px;margin:0 auto 6px;background:#fff;font-size:18px}.mini-app b{display:block;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mini-app small{display:block;font-size:8px;color:var(--muted);margin-top:2px}
 .search-wrap{position:relative}.search-wrap>span{position:absolute;left:14px;top:50%;transform:translateY(-50%)}.search{width:100%;min-height:50px;padding:12px 44px;border:1px solid #e1e5ed;border-radius:15px;background:var(--soft)}.search-clear{position:absolute;right:8px;top:8px;width:34px;height:34px;border-radius:10px;background:#eef0f6;color:#6d7587}
 .chips{display:flex;gap:7px;overflow:auto;padding:10px 1px 2px;scrollbar-width:none}.chip{white-space:nowrap;padding:8px 11px;border-radius:999px;background:rgba(102,116,232,.10);color:var(--primaryStrong);font-size:11px;font-weight:800;border:1px solid rgba(102,116,232,.08)}.chip.active{background:var(--primary);color:#fff}
@@ -43,7 +49,7 @@ button,input,select{font:inherit;outline:none}button{border:0;cursor:pointer}a{c
 .apps-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.app-card{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:15px;box-shadow:0 4px 14px rgba(27,33,62,.06)}.app-card[hidden]{display:none}
 .app-head{display:flex;justify-content:space-between;align-items:flex-start}.app-icon{width:45px;height:45px;border-radius:15px;display:grid;place-items:center;font-size:22px;background:color-mix(in srgb,var(--app-color) 12%,white);border:1px solid color-mix(in srgb,var(--app-color) 18%,white)}.fav-btn{width:32px;height:32px;border-radius:10px;background:#f4f5f9;color:#a0a6b4;font-size:16px}.fav-btn.on{background:#fff7db;color:#d99023}
 .app-card h3{font-size:15px;margin-top:11px}.app-card p{font-size:10px;color:var(--muted);line-height:1.4;margin:5px 0 9px;min-height:28px}.tags{display:flex;gap:4px;flex-wrap:wrap}.tag{font-size:9px;font-weight:800;padding:5px 8px;border-radius:999px;background:#f0f2f7;color:#6b7486}.status-estavel{background:#e8f5ef;color:#087443}.status-dev{background:#eaf0ff;color:#4f46c5}.status-teste{background:#fff4db;color:#a16207}.status-pausado{background:#eff1f5;color:#687187}
-.app-actions{display:grid;grid-template-columns:1fr 40px;gap:6px;margin-top:11px}.open-btn{min-height:40px;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--primaryStrong));color:#fff;font-size:11px;font-weight:850;display:grid;place-items:center}.copy-btn{min-height:40px;border-radius:12px;background:#f1f3f7;color:#596275;font-size:15px}
+.app-actions{display:grid;grid-template-columns:1fr 40px 40px;gap:6px;margin-top:11px}.open-btn{min-height:40px;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--primaryStrong));color:#fff;font-size:11px;font-weight:850;display:grid;place-items:center}.copy-btn,.hide-btn{min-height:40px;border-radius:12px;background:#f1f3f7;color:#596275;font-size:15px}.hide-btn.hidden-app{background:#fff4db;color:#a16207}
 .empty{grid-column:1/-1;text-align:center;background:var(--surface);border-radius:20px;padding:26px;color:var(--muted);font-size:12px}
 .btn{width:100%;min-height:48px;border-radius:14px;padding:12px;font-size:13px;font-weight:800;margin-top:9px}.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primaryStrong));color:#fff}.btn-neutral{background:#f1f3f7;color:#465066;border:1px solid #e4e7ee}.btn-red{background:#fff1f2;color:#c83a47;border:1px solid #ffe0e3}
 .setting-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #edf0f5}.setting-row b{font-size:13px}.setting-row small{display:block;color:var(--muted);font-size:10px;margin-top:2px}.switch{width:46px;height:27px;border-radius:99px;background:#dfe3eb;padding:3px}.switch i{display:block;width:21px;height:21px;border-radius:50%;background:#fff;transition:.2s}.switch.on{background:var(--primary)}.switch.on i{transform:translateX(19px)}
@@ -68,12 +74,17 @@ body.list-mode .apps-grid{grid-template-columns:1fr}body.compact .app-card p{dis
 
   <div class="dashboard">
     <div class="dash"><b id="totalCount">8</b><small>Projetos</small></div>
-    <div class="dash"><b id="favoriteCount">6</b><small>Favoritos</small></div>
+    <div class="dash"><b id="favoriteCount">0</b><small>Favoritos</small></div>
   </div>
 
   <div class="card home-compact">
     <div class="section-title"><h2>★ Favoritos</h2><button class="mini-link" data-go="favoritesPage">Ver todos</button></div>
-    <div class="mini-apps" id="favoriteMini"><a class="mini-app" href="https://kaua212106.github.io/Walkie/" data-open="walkie"><span>💬</span><b>Walkie</b><small>Estável</small></a><a class="mini-app" href="https://kaua212106.github.io/Contagem-de-calorias-/" data-open="calorias"><span>🍎</span><b>Minhas Calorias</b><small>Em desenvolvimento</small></a><a class="mini-app" href="https://kaua212106.github.io/Central-de-html/" data-open="devkit"><span>&lt;/&gt;</span><b>DevKit</b><small>Estável</small></a><a class="mini-app" href="https://kaua212106.github.io/Meus-conhecimentos/" data-open="conhecimento"><span>🧠</span><b>Meu Conhecimento</b><small>Estável</small></a></div>
+    <div class="mini-apps" id="favoriteMini">
+      <div class="favorite-help">
+        <b>☆ Como adicionar favoritos</b>
+        <span>Toque na estrela ☆ de qualquer aplicativo para ele aparecer aqui.</span>
+      </div>
+    </div>
   </div>
 
   <div class="card home-compact">
@@ -105,6 +116,7 @@ body.list-mode .apps-grid{grid-template-columns:1fr}body.compact .app-card p{dis
   <div class="app-actions">
     <a class="open-btn" data-open="walkie" href="https://kaua212106.github.io/Walkie/">Abrir</a>
     <button class="copy-btn" data-copy="https://kaua212106.github.io/Walkie/" aria-label="Copiar link">⧉</button>
+    <button class="hide-btn" data-hide-app="walkie" aria-label="Ocultar da tela inicial">👁</button>
   </div>
 </article>
 <article class="app-card" data-id="calorias" data-name="minhas calorias" data-category="Saúde" data-folder="Pessoal" data-status="Em desenvolvimento" style="--app-color:#10b981">
@@ -122,6 +134,7 @@ body.list-mode .apps-grid{grid-template-columns:1fr}body.compact .app-card p{dis
   <div class="app-actions">
     <a class="open-btn" data-open="calorias" href="https://kaua212106.github.io/Contagem-de-calorias-/">Abrir</a>
     <button class="copy-btn" data-copy="https://kaua212106.github.io/Contagem-de-calorias-/" aria-label="Copiar link">⧉</button>
+    <button class="hide-btn" data-hide-app="calorias" aria-label="Ocultar da tela inicial">👁</button>
   </div>
 </article>
 <article class="app-card" data-id="devkit" data-name="devkit" data-category="Desenvolvimento" data-folder="Desenvolvimento" data-status="Estável" style="--app-color:#3b82f6">
@@ -139,6 +152,7 @@ body.list-mode .apps-grid{grid-template-columns:1fr}body.compact .app-card p{dis
   <div class="app-actions">
     <a class="open-btn" data-open="devkit" href="https://kaua212106.github.io/Central-de-html/">Abrir</a>
     <button class="copy-btn" data-copy="https://kaua212106.github.io/Central-de-html/" aria-label="Copiar link">⧉</button>
+    <button class="hide-btn" data-hide-app="devkit" aria-label="Ocultar da tela inicial">👁</button>
   </div>
 </article>
 <article class="app-card" data-id="cofre" data-name="meu cofre" data-category="Utilidades" data-folder="Pessoal" data-status="Estável" style="--app-color:#764ba2">
@@ -156,6 +170,7 @@ body.list-mode .apps-grid{grid-template-columns:1fr}body.compact .app-card p{dis
   <div class="app-actions">
     <a class="open-btn" data-open="cofre" href="https://kaua212106.github.io/Cofre-de-documentos/">Abrir</a>
     <button class="copy-btn" data-copy="https://kaua212106.github.io/Cofre-de-documentos/" aria-label="Copiar link">⧉</button>
+    <button class="hide-btn" data-hide-app="cofre" aria-label="Ocultar da tela inicial">👁</button>
   </div>
 </article>
 <article class="app-card" data-id="ritmo" data-name="ritmo" data-category="Hábitos" data-folder="Pessoal" data-status="Estável" style="--app-color:#2ca574">
@@ -173,6 +188,7 @@ body.list-mode .apps-grid{grid-template-columns:1fr}body.compact .app-card p{dis
   <div class="app-actions">
     <a class="open-btn" data-open="ritmo" href="https://kaua212106.github.io/Ritmo/">Abrir</a>
     <button class="copy-btn" data-copy="https://kaua212106.github.io/Ritmo/" aria-label="Copiar link">⧉</button>
+    <button class="hide-btn" data-hide-app="ritmo" aria-label="Ocultar da tela inicial">👁</button>
   </div>
 </article>
 <article class="app-card" data-id="conhecimento" data-name="meu conhecimento" data-category="Estudos" data-folder="Estudos" data-status="Estável" style="--app-color:#8956ed">
@@ -190,6 +206,7 @@ body.list-mode .apps-grid{grid-template-columns:1fr}body.compact .app-card p{dis
   <div class="app-actions">
     <a class="open-btn" data-open="conhecimento" href="https://kaua212106.github.io/Meus-conhecimentos/">Abrir</a>
     <button class="copy-btn" data-copy="https://kaua212106.github.io/Meus-conhecimentos/" aria-label="Copiar link">⧉</button>
+    <button class="hide-btn" data-hide-app="conhecimento" aria-label="Ocultar da tela inicial">👁</button>
   </div>
 </article>
 <article class="app-card" data-id="financas" data-name="minhas finanças" data-category="Finanças" data-folder="Pessoal" data-status="Em desenvolvimento" style="--app-color:#10b981">
@@ -207,6 +224,7 @@ body.list-mode .apps-grid{grid-template-columns:1fr}body.compact .app-card p{dis
   <div class="app-actions">
     <a class="open-btn" data-open="financas" href="https://kaua212106.github.io/Organiza-o-financeira/">Abrir</a>
     <button class="copy-btn" data-copy="https://kaua212106.github.io/Organiza-o-financeira/" aria-label="Copiar link">⧉</button>
+    <button class="hide-btn" data-hide-app="financas" aria-label="Ocultar da tela inicial">👁</button>
   </div>
 </article>
 <article class="app-card" data-id="agenda" data-name="agenda de tarefas" data-category="Produtividade" data-folder="Organização" data-status="Estável" style="--app-color:#f59e0b">
@@ -224,6 +242,7 @@ body.list-mode .apps-grid{grid-template-columns:1fr}body.compact .app-card p{dis
   <div class="app-actions">
     <a class="open-btn" data-open="agenda" href="https://kaua212106.github.io/Agenda-de-tarefas/">Abrir</a>
     <button class="copy-btn" data-copy="https://kaua212106.github.io/Agenda-de-tarefas/" aria-label="Copiar link">⧉</button>
+    <button class="hide-btn" data-hide-app="agenda" aria-label="Ocultar da tela inicial">👁</button>
   </div>
 </article></div>
   <div class="empty" id="noResults" hidden>Nenhum aplicativo encontrado.</div>
@@ -247,6 +266,12 @@ body.list-mode .apps-grid{grid-template-columns:1fr}body.compact .app-card p{dis
     <div class="setting-row"><div><b>Modo lista</b><small>Um aplicativo por linha.</small></div><button class="switch" id="listSwitch"><i></i></button></div>
     <div class="setting-row"><div><b>Cards compactos</b><small>Esconde a descrição.</small></div><button class="switch" id="compactSwitch"><i></i></button></div>
   </div>
+  <div class="card">
+    <div class="section-title"><h2>🗑 Preferências</h2></div>
+    <p style="font-size:11px;color:var(--muted);line-height:1.5">Apaga favoritos, apps ocultos, recentes e mudanças de aparência salvas neste aparelho. Os aplicativos da Central não são apagados.</p>
+    <button class="btn btn-red" id="deletePrefsBtn">Excluir preferências</button>
+  </div>
+
   <div class="card">
     <div class="section-title"><h2>📲 PWA</h2><span class="tag" id="onlineBadge">Online</span></div>
     <button class="btn btn-primary" id="installBtn">Instalar Central</button>
@@ -272,10 +297,10 @@ body.list-mode .apps-grid{grid-template-columns:1fr}body.compact .app-card p{dis
 <div class="toast" id="toast"></div>
 
 <script>
-const APPS=[{"id": "walkie", "name": "Walkie", "desc": "Aplicativo de comunicação e conversas.", "icon": "💬", "category": "Comunicação", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Walkie/", "color": "#667eea", "favorite": true}, {"id": "calorias", "name": "Minhas Calorias", "desc": "Controle de alimentação, calorias, água e progresso.", "icon": "🍎", "category": "Saúde", "folder": "Pessoal", "status": "Em desenvolvimento", "url": "https://kaua212106.github.io/Contagem-de-calorias-/", "color": "#10b981", "favorite": true}, {"id": "devkit", "name": "DevKit", "desc": "Kit do desenvolvedor para criar, revisar e organizar PWAs.", "icon": "</>", "category": "Desenvolvimento", "folder": "Desenvolvimento", "status": "Estável", "url": "https://kaua212106.github.io/Central-de-html/", "color": "#3b82f6", "favorite": true}, {"id": "cofre", "name": "Meu Cofre", "desc": "Cofre pessoal para documentos, arquivos e informações.", "icon": "🔐", "category": "Utilidades", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Cofre-de-documentos/", "color": "#764ba2", "favorite": false}, {"id": "ritmo", "name": "Ritmo", "desc": "Hábitos, metas e acompanhamento do progresso pessoal.", "icon": "◎", "category": "Hábitos", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Ritmo/", "color": "#2ca574", "favorite": false}, {"id": "conhecimento", "name": "Meu Conhecimento", "desc": "Segundo cérebro pessoal para estudo e organização.", "icon": "🧠", "category": "Estudos", "folder": "Estudos", "status": "Estável", "url": "https://kaua212106.github.io/Meus-conhecimentos/", "color": "#8956ed", "favorite": true}, {"id": "financas", "name": "Minhas Finanças", "desc": "Controle financeiro, metas, carteira e investimentos.", "icon": "R$", "category": "Finanças", "folder": "Pessoal", "status": "Em desenvolvimento", "url": "https://kaua212106.github.io/Organiza-o-financeira/", "color": "#10b981", "favorite": true}, {"id": "agenda", "name": "Agenda de Tarefas", "desc": "Tarefas, calendário, horários e Pomodoro.", "icon": "✓", "category": "Produtividade", "folder": "Organização", "status": "Estável", "url": "https://kaua212106.github.io/Agenda-de-tarefas/", "color": "#f59e0b", "favorite": true}];
+const APPS=[{"id": "walkie", "name": "Walkie", "desc": "Aplicativo de comunicação e conversas.", "icon": "💬", "category": "Comunicação", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Walkie/", "color": "#667eea", "favorite": false}, {"id": "calorias", "name": "Minhas Calorias", "desc": "Controle de alimentação, calorias, água e progresso.", "icon": "🍎", "category": "Saúde", "folder": "Pessoal", "status": "Em desenvolvimento", "url": "https://kaua212106.github.io/Contagem-de-calorias-/", "color": "#10b981", "favorite": false}, {"id": "devkit", "name": "DevKit", "desc": "Kit do desenvolvedor para criar, revisar e organizar PWAs.", "icon": "</>", "category": "Desenvolvimento", "folder": "Desenvolvimento", "status": "Estável", "url": "https://kaua212106.github.io/Central-de-html/", "color": "#3b82f6", "favorite": false}, {"id": "cofre", "name": "Meu Cofre", "desc": "Cofre pessoal para documentos, arquivos e informações.", "icon": "🔐", "category": "Utilidades", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Cofre-de-documentos/", "color": "#764ba2", "favorite": false}, {"id": "ritmo", "name": "Ritmo", "desc": "Hábitos, metas e acompanhamento do progresso pessoal.", "icon": "◎", "category": "Hábitos", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Ritmo/", "color": "#2ca574", "favorite": false}, {"id": "conhecimento", "name": "Meu Conhecimento", "desc": "Segundo cérebro pessoal para estudo e organização.", "icon": "🧠", "category": "Estudos", "folder": "Estudos", "status": "Estável", "url": "https://kaua212106.github.io/Meus-conhecimentos/", "color": "#8956ed", "favorite": false}, {"id": "financas", "name": "Minhas Finanças", "desc": "Controle financeiro, metas, carteira e investimentos.", "icon": "R$", "category": "Finanças", "folder": "Pessoal", "status": "Em desenvolvimento", "url": "https://kaua212106.github.io/Organiza-o-financeira/", "color": "#10b981", "favorite": false}, {"id": "agenda", "name": "Agenda de Tarefas", "desc": "Tarefas, calendário, horários e Pomodoro.", "icon": "✓", "category": "Produtividade", "folder": "Organização", "status": "Estável", "url": "https://kaua212106.github.io/Agenda-de-tarefas/", "color": "#f59e0b", "favorite": false}];
 const STORAGE="central-publica-v10";
 const $=id=>document.getElementById(id);
-let prefs={favorites:null,recent:[],dark:false,list:false,compact:false};
+let prefs={favorites:null,recent:[],hidden:[],dark:false,list:false,compact:false};
 let deferredInstall=null;
 
 try{
@@ -283,7 +308,8 @@ try{
   if(saved&&typeof saved==="object")prefs={...prefs,...saved};
 }catch{}
 
-if(!Array.isArray(prefs.favorites))prefs.favorites=APPS.filter(a=>a.favorite).map(a=>a.id);
+if(!Array.isArray(prefs.favorites))prefs.favorites=[];
+if(!Array.isArray(prefs.hidden))prefs.hidden=[];
 
 function save(){try{localStorage.setItem(STORAGE,JSON.stringify(prefs))}catch{}}
 function toast(t){const el=$("toast");el.textContent=t;el.classList.add("show");clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove("show"),1700)}
@@ -298,7 +324,19 @@ function syncFavoriteButtons(){
   document.querySelectorAll("[data-fav]").forEach(b=>{
     const on=prefs.favorites.includes(b.dataset.fav);b.classList.toggle("on",on);b.textContent=on?"★":"☆"
   });
-  $("favoriteCount").textContent=prefs.favorites.length
+  const visibleIds=APPS.filter(a=>!prefs.hidden.includes(a.id)).map(a=>a.id);
+  $("totalCount").textContent=visibleIds.length;
+  $("favoriteCount").textContent=prefs.favorites.filter(id=>visibleIds.includes(id)).length
+}
+
+function syncHideButtons(){
+  document.querySelectorAll("[data-hide-app]").forEach(b=>{
+    const hidden=prefs.hidden.includes(b.dataset.hideApp);
+    b.classList.toggle("hidden-app",hidden);
+    b.textContent=hidden?"↩":"👁";
+    b.setAttribute("aria-label",hidden?"Mostrar na tela inicial":"Ocultar da tela inicial");
+    b.title=hidden?"Mostrar na tela inicial":"Ocultar da tela inicial"
+  })
 }
 
 function cloneCard(id){
@@ -309,22 +347,38 @@ function cloneCard(id){
 function renderFavorites(){
   const grid=$("favoritesGrid");grid.innerHTML="";
   prefs.favorites.forEach(id=>{const c=cloneCard(id);if(c)grid.appendChild(c)});
-  if(!grid.children.length)grid.innerHTML='<div class="empty">Nenhum favorito.</div>';
+  if(!grid.children.length){
+    grid.innerHTML='<div class="empty"><b>Você ainda não adicionou favoritos.</b><br>Toque na estrela ☆ de um aplicativo para adicionar.</div>'
+  }
+
   const mini=$("favoriteMini");mini.innerHTML="";
-  prefs.favorites.slice(0,4).forEach(id=>{
-    const a=appById(id);if(!a)return;
-    mini.insertAdjacentHTML("beforeend",`<a class="mini-app" href="${a.url}" data-open="${a.id}"><span>${a.icon}</span><b>${a.name}</b><small>${a.status}</small></a>`)
-  });
+  if(!prefs.favorites.length){
+    mini.innerHTML='<div class="favorite-help"><b>☆ Como adicionar favoritos</b><span>Toque na estrela ☆ de qualquer aplicativo para ele aparecer aqui.</span></div>'
+  }else{
+    prefs.favorites.filter(id=>!prefs.hidden.includes(id)).slice(0,4).forEach(id=>{
+      const a=appById(id);if(!a)return;
+      mini.insertAdjacentHTML("beforeend",`<a class="mini-app" href="${a.url}" data-open="${a.id}"><span>${a.icon}</span><b>${a.name}</b><small>${a.status}</small></a>`)
+    });
+    if(!mini.children.length){
+      mini.innerHTML='<div class="empty" style="grid-column:1/-1">Seus favoritos estão ocultos da tela inicial. Eles continuam disponíveis na aba Favoritos.</div>'
+    }
+  }
+  syncHideButtons()
 }
 
 function renderAllApps(){
   const grid=$("allAppsGrid");grid.innerHTML="";
-  APPS.forEach(a=>{const c=cloneCard(a.id);if(c)grid.appendChild(c)})
+  const ordered=[
+    ...APPS.filter(a=>!prefs.hidden.includes(a.id)),
+    ...APPS.filter(a=>prefs.hidden.includes(a.id))
+  ];
+  ordered.forEach(a=>{const c=cloneCard(a.id);if(c)grid.appendChild(c)});
+  syncHideButtons()
 }
 
 function renderRecent(){
   const box=$("recentMini");box.innerHTML="";
-  const ids=prefs.recent.filter(id=>appById(id)).slice(0,4);
+  const ids=prefs.recent.filter(id=>appById(id)&&!prefs.hidden.includes(id)).slice(0,4);
   if(!ids.length){box.innerHTML='<div class="empty" style="grid-column:1/-1">Abra um aplicativo pela Central e ele aparecerá aqui.</div>';return}
   ids.forEach(id=>{
     const a=appById(id);
@@ -351,7 +405,7 @@ function filterCards(){
     const okC=cat==="Todos"||c.dataset.category===cat;
     const okF=folder==="Todos"||c.dataset.folder===folder;
     const okS=status==="Todos"||c.dataset.status===status;
-    const show=okQ&&okC&&okF&&okS;c.hidden=!show;if(show)visible++
+    const isHidden=prefs.hidden.includes(c.dataset.id);const show=!isHidden&&okQ&&okC&&okF&&okS;c.hidden=!show;if(show)visible++
   });
   $("noResults").hidden=visible!==0
 }
@@ -362,6 +416,21 @@ document.addEventListener("click",async e=>{
     const id=fav.dataset.fav;
     prefs.favorites=prefs.favorites.includes(id)?prefs.favorites.filter(x=>x!==id):[...prefs.favorites,id];
     save();syncFavoriteButtons();renderFavorites();return
+  }
+
+  const hide=e.target.closest("[data-hide-app]");if(hide){
+    const id=hide.dataset.hideApp;
+    const wasHidden=prefs.hidden.includes(id);
+    prefs.hidden=wasHidden?prefs.hidden.filter(x=>x!==id):[...prefs.hidden,id];
+    save();
+    syncFavoriteButtons();
+    renderFavorites();
+    renderAllApps();
+    renderRecent();
+    filterCards();
+    syncHideButtons();
+    toast(wasHidden?"App voltou para a tela inicial.":"App ocultado da tela inicial.");
+    return
   }
   const copy=e.target.closest("[data-copy]");if(copy){
     try{await navigator.clipboard.writeText(copy.dataset.copy);toast("Link copiado.")}
@@ -384,6 +453,28 @@ document.querySelectorAll("[data-category-filter]").forEach(b=>b.onclick=()=>{
 $("darkSwitch").onclick=()=>{prefs.dark=!prefs.dark;save();applyPrefs()};
 $("listSwitch").onclick=()=>{prefs.list=!prefs.list;save();applyPrefs()};
 $("compactSwitch").onclick=()=>{prefs.compact=!prefs.compact;save();applyPrefs()};
+$("deletePrefsBtn").onclick=deletePreferences;
+
+
+function deletePreferences(){
+  if(!confirm("Excluir todas as preferências salvas neste aparelho?"))return;
+  try{localStorage.removeItem(STORAGE)}catch{}
+  prefs={favorites:[],recent:[],hidden:[],dark:false,list:false,compact:false};
+
+  $("searchInput").value="";
+  $("folderFilter").value="Todos";
+  $("statusFilter").value="Todos";
+  document.querySelectorAll("[data-category-filter]").forEach(b=>b.classList.toggle("active",b.dataset.categoryFilter==="Todos"));
+
+  applyPrefs();
+  syncFavoriteButtons();
+  renderFavorites();
+  renderAllApps();
+  renderRecent();
+  filterCards();
+  syncHideButtons();
+  toast("Preferências excluídas.")
+}
 
 function updateOnline(){$("onlineBadge").textContent=navigator.onLine?"Online":"Offline"}
 addEventListener("online",updateOnline);addEventListener("offline",updateOnline);updateOnline();
@@ -396,11 +487,11 @@ $("installBtn").onclick=async()=>{
 
 let reg=null;
 if("serviceWorker" in navigator){
-  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=10",{updateViaCache:"none"})}catch{}})
+  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=14",{updateViaCache:"none"})}catch{}})
 }
 $("checkUpdateBtn").onclick=async()=>{if(!reg)return toast("Service worker ainda não está pronto.");try{await reg.update();toast("Verificação concluída.")}catch{toast("Não foi possível verificar.")}};
 
-applyPrefs();syncFavoriteButtons();renderFavorites();renderAllApps();renderRecent();filterCards();
+applyPrefs();syncFavoriteButtons();renderFavorites();renderAllApps();renderRecent();filterCards();syncHideButtons();
 </script>
 </body>
 </html>
