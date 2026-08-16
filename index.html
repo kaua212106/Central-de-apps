@@ -59,9 +59,37 @@ button,input,select{font:inherit;outline:none}button{border:0;cursor:pointer}a{c
 body.dark{--text:#eef2ff;--muted:#a4aec2;--surface:rgba(18,24,38,.96);--soft:#151d2d;--border:rgba(255,255,255,.08)}body.dark .bottom{background:rgba(18,24,38,.94)}body.dark .modal-box{background:#121826}body.dark .mini-app span{background:#1b2435}
 body.list-mode .apps-grid{grid-template-columns:1fr}body.compact .app-card p{display:none}
 @media(max-width:370px){.apps-grid{grid-template-columns:1fr}.mini-apps{grid-template-columns:repeat(2,1fr)}}
+
+.auth-gate{position:fixed;inset:0;z-index:10000;display:none;align-items:center;justify-content:center;padding:18px;background:linear-gradient(145deg,#667eea,#764ba2)}
+body.access-locked{overflow:hidden}
+body.access-locked .auth-gate{display:flex}
+.auth-box{width:min(430px,100%);background:#fff;border-radius:28px;padding:24px 20px;box-shadow:0 28px 80px rgba(18,25,48,.30);text-align:center}
+.auth-logo{width:68px;height:68px;margin:0 auto 14px;border-radius:22px;display:grid;place-items:center;font-size:31px;background:linear-gradient(135deg,rgba(102,116,232,.14),rgba(118,75,162,.16));color:#5363dc}
+.auth-box h2{font-size:22px;color:#20283a;margin-bottom:7px}
+.auth-box p{font-size:12px;line-height:1.55;color:#687187;margin-bottom:16px}
+.auth-field{width:100%;min-height:52px;border:1px solid #e1e5ed;border-radius:15px;padding:13px 14px;background:#f7f8fc;color:#20283a;font-size:14px}
+.auth-error{min-height:18px;margin:8px 0 0;color:#d14343;font-size:11px;font-weight:700}
+.auth-enter{width:100%;min-height:50px;border-radius:14px;margin-top:8px;background:linear-gradient(135deg,#667eea,#5363dc);color:#fff;font-size:13px;font-weight:850}
+.auth-contact{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:48px;border-radius:14px;margin-top:10px;background:#eafaf1;color:#087443;border:1px solid #d2f2df;font-size:12px;font-weight:850;text-decoration:none}
+.auth-note{font-size:10px!important;margin:13px 4px 0!important;color:#8a91a1!important}
+
 </style>
 </head>
-<body>
+<body class="access-locked">
+
+<div class="auth-gate" id="authGate">
+  <div class="auth-box">
+    <div class="auth-logo">🔒</div>
+    <h2>Acesso protegido</h2>
+    <p>Digite a senha fornecida pelo administrador para acessar a Central de Apps.</p>
+    <input class="auth-field" id="accessPassword" type="password" placeholder="Senha de acesso" autocomplete="current-password">
+    <div class="auth-error" id="accessError"></div>
+    <button class="auth-enter" id="accessEnterBtn">Entrar</button>
+    <a class="auth-contact" href="https://wa.me/5517992250453?text=Ol%C3%A1%21%20Estou%20tentando%20acessar%20a%20Central%20de%20Apps%20e%20gostaria%20de%20solicitar%20a%20senha%20de%20acesso." target="_blank" rel="noopener">💬 Falar com o ADM pelo WhatsApp</a>
+    <p class="auth-note">Depois que este aparelho for autorizado, a senha não será solicitada novamente neste navegador.</p>
+  </div>
+</div>
+
 <header class="topbar">
   <button class="icon-btn" id="menuBtn">☰</button>
   <div class="brand"><h1>Central dos Meus Apps</h1><small>Meus aplicativos</small></div>
@@ -357,6 +385,13 @@ body.list-mode .apps-grid{grid-template-columns:1fr}body.compact .app-card p{dis
     <div class="setting-row"><div><b>Modo lista</b><small>Um aplicativo por linha.</small></div><button class="switch" id="listSwitch"><i></i></button></div>
     <div class="setting-row"><div><b>Cards compactos</b><small>Esconde a descrição.</small></div><button class="switch" id="compactSwitch"><i></i></button></div>
   </div>
+
+  <div class="card">
+    <div class="section-title"><h2>🔐 Segurança</h2></div>
+    <p style="font-size:11px;color:var(--muted);line-height:1.5">Este aparelho está autorizado a abrir a Central sem pedir a senha novamente.</p>
+    <button class="btn btn-red" id="revokeAccessBtn">Remover autorização deste aparelho</button>
+  </div>
+
   <div class="card">
     <div class="section-title"><h2>🗑 Preferências</h2></div>
     <p style="font-size:11px;color:var(--muted);line-height:1.5">Apaga favoritos, apps ocultos, recentes e mudanças de aparência salvas neste aparelho. Os aplicativos da Central não são apagados.</p>
@@ -388,6 +423,55 @@ body.list-mode .apps-grid{grid-template-columns:1fr}body.compact .app-card p{dis
 <div class="toast" id="toast"></div>
 
 <script>
+
+const ACCESS_STORAGE="central-access-authorized-v1";
+const ACCESS_HASH="618e86a89cdda72a7b5cb7a3430c6cc8a0d4457426aac1fad2eed8f04b93d88b";
+
+async function hashAccessPassword(value){
+  const data=new TextEncoder().encode(value);
+  const hash=await crypto.subtle.digest("SHA-256",data);
+  return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+
+function unlockCentral(){
+  document.body.classList.remove("access-locked");
+  const input=document.getElementById("accessPassword");
+  if(input)input.value="";
+}
+
+function lockCentral(){
+  document.body.classList.add("access-locked");
+  setTimeout(()=>document.getElementById("accessPassword")?.focus(),80);
+}
+
+try{
+  if(localStorage.getItem(ACCESS_STORAGE)==="1")unlockCentral();
+  else lockCentral();
+}catch{lockCentral();}
+
+document.getElementById("accessEnterBtn").onclick=async()=>{
+  const input=document.getElementById("accessPassword");
+  const error=document.getElementById("accessError");
+  const value=input.value;
+  if(!value){
+    error.textContent="Digite a senha de acesso.";
+    input.focus();
+    return;
+  }
+  if(await hashAccessPassword(value)===ACCESS_HASH){
+    try{localStorage.setItem(ACCESS_STORAGE,"1")}catch{}
+    error.textContent="";
+    unlockCentral();
+  }else{
+    error.textContent="Senha incorreta. Solicite a senha ao administrador.";
+    input.select();
+  }
+};
+
+document.getElementById("accessPassword").addEventListener("keydown",e=>{
+  if(e.key==="Enter")document.getElementById("accessEnterBtn").click();
+});
+
 const APPS=[{"id": "walkie", "name": "Walkie", "desc": "Aplicativo de comunicação e conversas.", "icon": "💬", "category": "Comunicação", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Walkie/", "color": "#667eea", "favorite": false}, {"id": "calorias", "name": "Minhas Calorias", "desc": "Controle de alimentação, calorias, água e progresso.", "icon": "🍎", "category": "Saúde", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Contagem-de-calorias-/", "color": "#10b981", "favorite": false}, {"id": "devkit", "name": "DevKit", "desc": "Kit do desenvolvedor para criar, revisar e organizar PWAs.", "icon": "</>", "category": "Desenvolvimento", "folder": "Desenvolvimento", "status": "Estável", "url": "https://kaua212106.github.io/Central-de-html/", "color": "#3b82f6", "favorite": false}, {"id": "cofre", "name": "Meu Cofre", "desc": "Cofre pessoal para documentos, arquivos e informações.", "icon": "🔐", "category": "Utilidades", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Cofre-de-documentos/", "color": "#764ba2", "favorite": false}, {"id": "ritmo", "name": "Ritmo", "desc": "Hábitos, metas e acompanhamento do progresso pessoal.", "icon": "◎", "category": "Hábitos", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Ritmo/", "color": "#2ca574", "favorite": false}, {"id": "conhecimento", "name": "Meu Conhecimento", "desc": "Segundo cérebro pessoal para estudo e organização.", "icon": "🧠", "category": "Estudos", "folder": "Estudos", "status": "Estável", "url": "https://kaua212106.github.io/Meus-conhecimentos/", "color": "#8956ed", "favorite": false}, {"id": "financas", "name": "Minhas Finanças", "desc": "Controle financeiro, metas, carteira e investimentos.", "icon": "R$", "category": "Finanças", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Organiza-o-financeira/", "color": "#10b981", "favorite": false}, {"id": "agenda", "name": "Agenda de Tarefas", "desc": "Tarefas, calendário, horários e Pomodoro.", "icon": "✓", "category": "Produtividade", "folder": "Organização", "status": "Estável", "url": "https://kaua212106.github.io/Agenda-de-tarefas/", "color": "#f59e0b", "favorite": false}, {"id": "links", "name": "Central de Links", "desc": "Organize, pesquise e acesse seus links favoritos em um só lugar.", "icon": "🔗", "category": "Utilidades", "folder": "Organização", "status": "Estável", "url": "https://kaua212106.github.io/Central-de-links/", "color": "#3b82f6", "favorite": false}, {"id": "informacoes", "name": "Lista de Informações", "desc": "Organize e consulte informações importantes em um só lugar.", "icon": "🗂️", "category": "Utilidades", "folder": "Organização", "status": "Estável", "url": "https://kaua212106.github.io/Lista-de-informa-es-/", "color": "#6366f1", "favorite": false}, {"id": "filmes", "name": "Lista de Filmes", "desc": "Organize filmes, acompanhe o que já assistiu e o que quer ver.", "icon": "🎬", "category": "Entretenimento", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Lista-de-filmes/", "color": "#ef4444", "favorite": false}, {"id": "biblioteca", "name": "Biblioteca", "desc": "Biblioteca pessoal para organizar livros, PDFs, arquivos e leituras.", "icon": "📚", "category": "Estudos", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Biblioteca/", "color": "#8b5cf6", "favorite": false}, {"id": "receitas", "name": "Livro de Receitas", "desc": "Organize e consulte suas receitas favoritas em um só lugar.", "icon": "🍳", "category": "Receitas", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Livro-de-receitas/", "color": "#f97316", "favorite": false}];
 const STORAGE="central-publica-v10";
 const $=id=>document.getElementById(id);
@@ -550,6 +634,13 @@ $("listSwitch").onclick=()=>{prefs.list=!prefs.list;save();applyPrefs()};
 $("compactSwitch").onclick=()=>{prefs.compact=!prefs.compact;save();applyPrefs()};
 $("deletePrefsBtn").onclick=deletePreferences;
 
+$("revokeAccessBtn").onclick=()=>{
+  if(!confirm("Remover a autorização deste aparelho? A senha será solicitada novamente."))return;
+  try{localStorage.removeItem(ACCESS_STORAGE)}catch{}
+  lockCentral();
+};
+
+
 
 function deletePreferences(){
   if(!confirm("Excluir todas as preferências salvas neste aparelho?"))return;
@@ -582,7 +673,7 @@ $("installBtn").onclick=async()=>{
 
 let reg=null;
 if("serviceWorker" in navigator){
-  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=21",{updateViaCache:"none"})}catch{}})
+  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=22",{updateViaCache:"none"})}catch{}})
 }
 $("checkUpdateBtn").onclick=async()=>{if(!reg)return toast("Service worker ainda não está pronto.");try{await reg.update();toast("Verificação concluída.")}catch{toast("Não foi possível verificar.")}};
 
