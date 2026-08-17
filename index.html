@@ -125,6 +125,97 @@ body.access-verifying .copy-btn{opacity:.62}
 .security-chip.ok{background:#e8f5ef;color:#087443}
 .security-chip.warn{background:#fff4db;color:#a16207}
 
+
+/* Login compacto V4.2 */
+.auth-box{
+  width:min(430px,100%);
+  max-height:calc(100dvh - 20px);
+  padding:18px 16px;
+  border-radius:24px;
+}
+.auth-logo{
+  width:56px;
+  height:56px;
+  margin:0 auto 9px;
+  border-radius:18px;
+  font-size:26px;
+}
+.auth-box h2{
+  font-size:21px;
+  margin-bottom:5px;
+}
+.auth-box p{
+  font-size:11px;
+  line-height:1.42;
+  margin-bottom:9px;
+}
+.auth-guide{
+  margin:8px 0 2px;
+  padding:9px 11px;
+  border-radius:12px;
+}
+.auth-guide b{
+  font-size:10.5px;
+  margin-bottom:3px;
+}
+.auth-guide span{
+  font-size:9.5px;
+  line-height:1.4;
+}
+.auth-field{
+  min-height:48px;
+  border-radius:13px;
+  padding:11px 13px;
+  font-size:13px;
+  margin-top:7px;
+}
+.password-rules{
+  margin:7px 0 0;
+  padding:8px 10px;
+  border-radius:11px;
+  font-size:8.7px;
+  line-height:1.4;
+}
+.auth-error,.auth-success{
+  margin-top:5px;
+  min-height:14px;
+  font-size:10px;
+}
+.auth-enter,.auth-secondary{
+  min-height:46px;
+  border-radius:13px;
+  margin-top:7px;
+  font-size:12px;
+}
+.auth-forgot-btn{
+  background:#eef1ff;
+  color:#5363dc;
+  border:1px solid #dfe4ff;
+}
+.auth-contact{
+  min-height:45px;
+  border-radius:13px;
+  margin-top:8px;
+  font-size:11px;
+}
+.auth-note{
+  font-size:9px!important;
+  line-height:1.35!important;
+  margin:8px 3px 0!important;
+}
+@media(max-height:740px){
+  .auth-box{padding:14px 14px;max-height:calc(100dvh - 12px)}
+  .auth-logo{width:48px;height:48px;font-size:23px;margin-bottom:6px}
+  .auth-box h2{font-size:19px;margin-bottom:3px}
+  .auth-box p{font-size:10px;margin-bottom:6px}
+  .auth-guide{margin:6px 0 1px;padding:8px 9px}
+  .auth-field{min-height:44px;margin-top:6px;padding:9px 11px}
+  .password-rules{margin-top:5px;padding:7px 9px}
+  .auth-enter,.auth-secondary{min-height:43px;margin-top:6px}
+  .auth-contact{min-height:42px;margin-top:6px}
+  .auth-note{margin-top:6px!important}
+}
+
 </style>
 </head>
 <body class="access-locked access-verifying">
@@ -153,7 +244,7 @@ body.access-verifying .copy-btn{opacity:.62}
       <div class="auth-success" id="authSuccess"></div>
       <button class="auth-enter" id="authLoginBtn">Entrar</button>
       <button class="auth-secondary" id="authSignupBtn">Criar solicitação</button>
-      <button class="auth-link-btn" id="authForgotBtn">Esqueci minha senha</button>
+      <button class="auth-secondary auth-forgot-btn" id="authForgotBtn">🔑 Esqueci minha senha</button>
       <a class="auth-contact" id="authWhatsapp" href="https://wa.me/5517992250453" target="_blank" rel="noopener">💬 Falar com o ADM pelo WhatsApp</a>
       <p class="auth-note">A conta só será liberada depois que o administrador aprovar o acesso.</p>
     </div>
@@ -1414,7 +1505,7 @@ $("installBtn").onclick=async()=>{
 
 let reg=null;
 if("serviceWorker" in navigator){
-  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=31",{updateViaCache:"none"})}catch{}})
+  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=32",{updateViaCache:"none"})}catch{}})
 }
 $("checkUpdateBtn").onclick=async()=>{if(!reg)return toast("Service worker ainda não está pronto.");try{await reg.update();toast("Verificação concluída.")}catch{toast("Não foi possível verificar.")}};
 
