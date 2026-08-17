@@ -286,6 +286,42 @@ body.access-verifying .copy-btn{opacity:.62}
   font-size:9px;
 }
 
+
+/* V4.4.9 - aviso de recarregar após login */
+.reload-login-notice{
+  display:none;
+  background:#fff8e8;
+  border:1px solid #f4dfaa;
+  color:#805b12;
+  border-radius:18px;
+  padding:13px 14px;
+  margin:0 0 12px;
+  box-shadow:var(--shadow);
+}
+.reload-login-notice.show{
+  display:block;
+}
+.reload-login-notice b{
+  display:block;
+  font-size:12px;
+  margin-bottom:4px;
+}
+.reload-login-notice span{
+  display:block;
+  font-size:10px;
+  line-height:1.45;
+}
+.reload-login-notice button{
+  width:100%;
+  min-height:42px;
+  margin-top:9px;
+  border-radius:12px;
+  background:#f3b63f;
+  color:#4f3908;
+  font-size:11px;
+  font-weight:850;
+}
+
 </style>
 </head>
 <body class="access-locked access-verifying">
@@ -349,6 +385,12 @@ body.access-verifying .copy-btn{opacity:.62}
 <main>
 <section class="page active" id="homePage">
   <div class="hero"><h2>Meus aplicativos</h2><p>Tudo que você criou, organizado em um só lugar.</p></div>
+
+  <div class="reload-login-notice" id="reloadLoginNotice">
+    <b>🔄 Recarregue a Central após o login</b>
+    <span>Antes de abrir um aplicativo protegido, recarregue esta página uma vez para concluir a liberação da sessão.</span>
+    <button id="reloadCentralBtn">Recarregar agora</button>
+  </div>
 
   <div id="homeAdminSlot"></div>
 
@@ -769,6 +811,7 @@ const CENTRAL_ADMIN_UIDS=[
 ];
 let centralAuth=null,centralDb=null,centralFirebaseApi=null,centralCurrentUser=null,centralUserData=null;
 let pendingRequestMap=new Map();
+let centralLoginJustCompleted=false;
 
 function centralDeviceId(){
   let id="";
@@ -1020,6 +1063,12 @@ function grantCentralAccess(user,data){
   $("securityRole").textContent=data?.admin===true?"Administrador":"Usuário";
   applyAdminPanelLocation();
   unlockCentral();
+
+  if(centralLoginJustCompleted){
+    $("reloadLoginNotice").classList.add("show");
+    centralLoginJustCompleted=false;
+  }
+
   if(data?.admin===true)loadAdminData();
 }
 async function loginCentral(){
@@ -1029,8 +1078,10 @@ async function loginCentral(){
   if(!email||!password){$("authError").textContent="Preencha e-mail e senha.";return}
   try{
     $("authLoginBtn").disabled=true;
+    centralLoginJustCompleted=true;
     await centralFirebaseApi.signInWithEmailAndPassword(centralAuth,email,password)
   }catch(err){
+    centralLoginJustCompleted=false;
     $("authError").textContent=authMessage(err)
   }finally{$("authLoginBtn").disabled=false}
 }
@@ -1568,6 +1619,7 @@ $("adminPanelLocationSelect").onchange=()=>{
   applyAdminPanelLocation();
   toast(prefs.adminPanelLocation==="home"?"Painel do ADM movido para a tela inicial.":"Painel do ADM movido para Ajustes.")
 };
+$("reloadCentralBtn").onclick=()=>location.reload();
 $("deletePrefsBtn").onclick=deletePreferences;
 
 
@@ -1603,7 +1655,7 @@ $("installBtn").onclick=async()=>{
 
 let reg=null;
 if("serviceWorker" in navigator){
-  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=43",{updateViaCache:"none"})}catch{}})
+  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=44",{updateViaCache:"none"})}catch{}})
 }
 $("checkUpdateBtn").onclick=async()=>{if(!reg)return toast("Service worker ainda não está pronto.");try{await reg.update();toast("Verificação concluída.")}catch{toast("Não foi possível verificar.")}};
 
