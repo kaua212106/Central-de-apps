@@ -11,12 +11,6 @@
 <link rel="icon" href="icone.png">
 <link rel="apple-touch-icon" href="icone.png">
 <title>Central dos Meus Apps</title>
-<script>
-try{
-  const c=JSON.parse(localStorage.getItem("central-access-cache-v1")||"null");
-  if(c&&Number(c.expiresAt)>Date.now())document.documentElement.classList.add("central-preauthorized");
-}catch{}
-</script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
 :root{--primary:#667eea;--primary2:#764ba2;--primaryStrong:#5363dc;--green:#10b981;--orange:#f59e0b;--text:#20283a;--muted:#687187;--surface:rgba(255,255,255,.96);--soft:#f7f8fc;--border:rgba(31,41,55,.08);--shadow:0 12px 30px rgba(27,33,62,.10)}
@@ -69,7 +63,14 @@ body.list-mode .apps-grid{grid-template-columns:1fr}body.compact .app-card p{dis
 .firebase-gate{position:fixed;inset:0;z-index:10000;display:none;align-items:center;justify-content:center;padding:18px;background:linear-gradient(145deg,#667eea,#764ba2)}
 body.access-locked{overflow:hidden}
 body.access-locked .firebase-gate{display:flex}
-html.central-preauthorized body.access-locked .firebase-gate{display:none}
+body.access-verifying{overflow:auto}
+body.access-verifying .firebase-gate{display:none!important}
+body.access-verifying [data-open],
+body.access-verifying [data-copy],
+body.access-verifying .open-btn,
+body.access-verifying .copy-btn{pointer-events:none!important}
+body.access-verifying .open-btn,
+body.access-verifying .copy-btn{opacity:.62}
 .auth-box{width:min(440px,100%);max-height:calc(100dvh - 28px);overflow:auto;background:#fff;border-radius:28px;padding:24px 20px;box-shadow:0 28px 80px rgba(18,25,48,.30);text-align:center}
 .auth-logo{width:68px;height:68px;margin:0 auto 14px;border-radius:22px;display:grid;place-items:center;font-size:31px;background:linear-gradient(135deg,rgba(102,116,232,.14),rgba(118,75,162,.16));color:#5363dc}
 .auth-box h2{font-size:22px;color:#20283a;margin-bottom:7px}
@@ -116,9 +117,19 @@ html.central-preauthorized body.access-locked .firebase-gate{display:none}
 .remove-access-btn{background:#fff4db;color:#a16207}
 
 
+
+.auth-link-btn{width:100%;margin-top:9px;padding:7px;background:transparent;color:#5363dc;font-size:11px;font-weight:800}
+.auth-success{min-height:18px;margin:8px 0 0;color:#087443;font-size:11px;font-weight:700}
+.password-rules{margin:8px 0 0;padding:9px 11px;border-radius:12px;background:#f7f8fc;text-align:left;color:#687187;font-size:9px;line-height:1.5}
+.security-chip{display:inline-flex;align-items:center;gap:5px;margin-top:6px;padding:5px 8px;border-radius:999px;font-size:9px;font-weight:850}
+.security-chip.ok{background:#e8f5ef;color:#087443}
+.security-chip.warn{background:#fff4db;color:#a16207}
+.mfa-secret{display:block;margin:10px 0;padding:11px;border-radius:12px;background:#f3f5fa;color:#34405a;font-family:monospace;font-size:12px;word-break:break-all;user-select:all}
+.mfa-help{text-align:left;font-size:10px!important;line-height:1.5!important}
+
 </style>
 </head>
-<body class="access-locked">
+<body class="access-locked access-verifying">
 
 <div class="firebase-gate" id="firebaseGate">
   <div class="auth-box">
@@ -135,15 +146,40 @@ html.central-preauthorized body.access-locked .firebase-gate{display:none}
       <p>Se você já possui uma conta autorizada, informe seu e-mail e sua senha para entrar.</p>
       <div class="auth-guide">
         <b>Primeiro acesso?</b>
-        <span>Digite o seu próprio e-mail, crie uma senha com pelo menos 6 caracteres e toque em <strong>Criar solicitação</strong>. Na próxima tela, envie a mensagem pronta para o ADM pelo WhatsApp.</span>
+        <span>Digite o seu próprio e-mail, crie uma senha forte e toque em <strong>Criar solicitação</strong>. Primeiro você confirmará o e-mail; depois poderá enviar a solicitação para o ADM.</span>
       </div>
       <input class="auth-field" id="authEmail" type="email" placeholder="Seu e-mail" autocomplete="email">
       <input class="auth-field" id="authPassword" type="password" placeholder="Sua senha" autocomplete="current-password">
+      <div class="password-rules">Nova conta: use no mínimo 10 caracteres, com letra maiúscula, minúscula, número e caractere especial.</div>
       <div class="auth-error" id="authError"></div>
+      <div class="auth-success" id="authSuccess"></div>
       <button class="auth-enter" id="authLoginBtn">Entrar</button>
       <button class="auth-secondary" id="authSignupBtn">Criar solicitação</button>
+      <button class="auth-link-btn" id="authForgotBtn">Esqueci minha senha</button>
       <a class="auth-contact" id="authWhatsapp" href="https://wa.me/5517992250453" target="_blank" rel="noopener">💬 Falar com o ADM pelo WhatsApp</a>
       <p class="auth-note">A conta só será liberada depois que o administrador aprovar o acesso.</p>
+    </div>
+
+    <div id="authVerifyView" hidden>
+      <div class="auth-status">✉️ Confirme seu e-mail</div>
+      <h2>Verificação obrigatória</h2>
+      <p id="authVerifyText">Antes de solicitar acesso, confirme que este e-mail realmente pertence a você.</p>
+      <span class="auth-device" id="authVerifyEmail"></span>
+      <button class="auth-enter" id="authVerifyResendBtn">Enviar e-mail de verificação</button>
+      <button class="auth-secondary" id="authVerifyCheckBtn">Já verifiquei meu e-mail</button>
+      <div class="auth-error" id="authVerifyError"></div>
+      <div class="auth-success" id="authVerifySuccess"></div>
+      <button class="auth-link-btn" id="authVerifyLogout">Usar outra conta</button>
+    </div>
+
+    <div id="authMfaView" hidden>
+      <div class="auth-status">🛡️ Verificação em 2 etapas</div>
+      <h2>Código do autenticador</h2>
+      <p>Digite o código de 6 dígitos mostrado no seu aplicativo autenticador.</p>
+      <input class="auth-field" id="authMfaCode" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Código de 6 dígitos">
+      <div class="auth-error" id="authMfaError"></div>
+      <button class="auth-enter" id="authMfaSubmitBtn">Confirmar código</button>
+      <button class="auth-link-btn" id="authMfaBackBtn">Voltar ao login</button>
     </div>
 
     <div id="authPendingView" hidden>
@@ -464,8 +500,14 @@ html.central-preauthorized body.access-locked .firebase-gate{display:none}
   </div>
   <div class="card" id="firebaseSecurityCard" hidden>
     <div class="section-title"><h2>🔐 Conta e segurança</h2><span class="tag" id="securityRole">Usuário</span></div>
-    <div class="security-info"><b>Conta conectada</b><small id="securityEmail">—</small></div>
+    <div class="security-info"><b>Conta conectada</b><small id="securityEmail">—</small><span class="security-chip ok" id="securityEmailVerified">E-mail verificado</span></div>
     <div class="security-info"><b>Código deste dispositivo</b><small id="securityDevice">—</small></div>
+    <div class="security-info" id="securityMfaRow" hidden>
+      <b>Verificação em 2 etapas (ADM)</b>
+      <small id="securityMfaText">Verificando...</small>
+      <span class="security-chip warn" id="securityMfaStatus">Não configurada</span>
+      <button class="btn btn-neutral" id="setupMfaBtn">Configurar autenticador (TOTP)</button>
+    </div>
     <button class="btn btn-neutral" id="firebaseLogoutBtn">Sair da conta</button>
   </div>
 
@@ -516,6 +558,23 @@ html.central-preauthorized body.access-locked .firebase-gate{display:none}
   <button class="btn btn-neutral" data-go="appsPage">▦ Todos os aplicativos</button>
   <button class="btn btn-neutral" data-go="settingsPage">⚙ Ajustes</button>
 </div></div>
+<div class="modal" id="mfaSetupModal"><div class="modal-box">
+  <div class="modal-title"><h2>🛡️ Autenticação em 2 etapas</h2><button class="close" id="closeMfaSetup">×</button></div>
+  <div id="mfaReauthStep">
+    <p class="mfa-help">Para ativar o autenticador, confirme primeiro a senha atual da sua conta de ADM.</p>
+    <input class="auth-field" id="mfaCurrentPassword" type="password" autocomplete="current-password" placeholder="Senha atual">
+    <div class="auth-error" id="mfaSetupError"></div>
+    <button class="btn btn-primary" id="mfaGenerateBtn">Continuar</button>
+  </div>
+  <div id="mfaSecretStep" hidden>
+    <p class="mfa-help">No Google Authenticator ou outro aplicativo TOTP, escolha adicionar uma chave manualmente e use a chave abaixo. Depois digite o código gerado.</p>
+    <span class="mfa-secret" id="mfaSecretCode">—</span>
+    <input class="auth-field" id="mfaEnrollCode" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Código de 6 dígitos">
+    <div class="auth-error" id="mfaEnrollError"></div>
+    <button class="btn btn-primary" id="mfaEnrollBtn">Ativar 2 etapas</button>
+  </div>
+</div></div>
+
 <div class="toast" id="toast"></div>
 
 <script src="firebase-config.js"></script>
@@ -529,10 +588,12 @@ let deferredInstall=null;
 const FIREBASE_SDK_VERSION="12.17.1";
 const CENTRAL_DEVICE_KEY="central-device-id-v1";
 const CENTRAL_ACCESS_CACHE_KEY="central-access-cache-v1";
-const CENTRAL_ACCESS_CACHE_TTL=24*60*60*1000;
+const CENTRAL_ACCESS_CACHE_TTL=0;
 const CENTRAL_WHATSAPP="5517992250453";
 let centralAuth=null,centralDb=null,centralFirebaseApi=null,centralCurrentUser=null,centralUserData=null;
 let pendingRequestMap=new Map();
+let centralMfaResolver=null;
+let centralTotpSecret=null;
 
 function centralDeviceId(){
   let id="";
@@ -544,27 +605,25 @@ function centralDeviceId(){
   return id
 }
 
-function cacheCentralAccess(user){
-  try{
-    localStorage.setItem(CENTRAL_ACCESS_CACHE_KEY,JSON.stringify({
-      uid:user?.uid||"",
-      deviceId:centralDeviceId(),
-      expiresAt:Date.now()+CENTRAL_ACCESS_CACHE_TTL
-    }));
-    document.documentElement.classList.add("central-preauthorized")
-  }catch{}
-}
+function cacheCentralAccess(user){}
 function clearCentralAccessCache(){
   try{localStorage.removeItem(CENTRAL_ACCESS_CACHE_KEY)}catch{}
-  document.documentElement.classList.remove("central-preauthorized")
 }
 
 function setAuthView(name){
-  const ids=["authLoadingView","authLoginView","authPendingView","authConfigView"];
+  const ids=["authLoadingView","authLoginView","authVerifyView","authMfaView","authPendingView","authConfigView"];
   ids.forEach(id=>$(id).hidden=id!==name);
 }
-function lockCentral(){document.body.classList.add("access-locked")}
-function unlockCentral(){document.body.classList.remove("access-locked")}
+function beginCentralVerification(){
+  document.body.classList.add("access-locked","access-verifying")
+}
+function lockCentral(){
+  document.body.classList.add("access-locked");
+  document.body.classList.remove("access-verifying")
+}
+function unlockCentral(){
+  document.body.classList.remove("access-locked","access-verifying")
+}
 function waLink(message){return `https://wa.me/${CENTRAL_WHATSAPP}?text=${encodeURIComponent(message)}`}
 function firebaseConfigured(){
   const c=window.CENTRAL_FIREBASE_CONFIG;
@@ -575,7 +634,7 @@ function authMessage(err){
   if(code.includes("invalid-credential")||code.includes("wrong-password")||code.includes("user-not-found"))return "E-mail ou senha incorretos.";
   if(code.includes("invalid-email"))return "Digite um e-mail válido.";
   if(code.includes("email-already-in-use"))return "Este e-mail já possui uma conta. Use Entrar.";
-  if(code.includes("weak-password"))return "Use uma senha com pelo menos 6 caracteres.";
+  if(code.includes("weak-password")||code.includes("password-does-not-meet-requirements"))return "A senha não atende aos requisitos de segurança.";
   if(code.includes("too-many-requests"))return "Muitas tentativas. Tente novamente mais tarde.";
   if(code.includes("network-request-failed"))return "Sem conexão com o Firebase.";
   return "Não foi possível concluir. Verifique os dados e tente novamente.";
@@ -613,8 +672,224 @@ async function ensureAccessRequest(user,type){
   await api.setDoc(ref,payload);
   return payload
 }
-async function evaluateCentralAccess(user){
+
+function localStrongPasswordError(password){
+  if(password.length<10)return "A senha precisa ter pelo menos 10 caracteres.";
+  if(!/[a-z]/.test(password))return "Adicione pelo menos uma letra minúscula.";
+  if(!/[A-Z]/.test(password))return "Adicione pelo menos uma letra maiúscula.";
+  if(!/[0-9]/.test(password))return "Adicione pelo menos um número.";
+  if(!/[^A-Za-z0-9]/.test(password))return "Adicione pelo menos um caractere especial.";
+  return ""
+}
+
+async function validateStrongPassword(password){
+  const localError=localStrongPasswordError(password);
+  if(localError)return localError;
+  try{
+    if(centralFirebaseApi?.validatePassword){
+      const status=await centralFirebaseApi.validatePassword(centralAuth,password);
+      if(status&&!status.isValid)return "A senha não atende à política configurada no Firebase.";
+    }
+  }catch(err){
+    console.warn("Validação da política de senha:",err)
+  }
+  return ""
+}
+
+function showEmailVerification(user,message=""){
+  clearCentralAccessCache();
   lockCentral();
+  setAuthView("authVerifyView");
+  $("authVerifyEmail").textContent=user?.email||"";
+  $("authVerifyText").textContent=message||"Antes de solicitar acesso, confirme que este e-mail realmente pertence a você.";
+  $("authVerifyError").textContent="";
+  $("authVerifySuccess").textContent=""
+}
+
+async function resendVerificationEmail(){
+  const user=centralAuth?.currentUser;
+  if(!user)return;
+  $("authVerifyError").textContent="";
+  $("authVerifySuccess").textContent="";
+  try{
+    $("authVerifyResendBtn").disabled=true;
+    centralAuth.languageCode="pt-BR";
+    await centralFirebaseApi.sendEmailVerification(user);
+    $("authVerifySuccess").textContent="E-mail enviado. Confira também a pasta de spam."
+  }catch(err){
+    console.error(err);
+    $("authVerifyError").textContent=authMessage(err)
+  }finally{
+    $("authVerifyResendBtn").disabled=false
+  }
+}
+
+async function checkVerifiedEmail(){
+  const user=centralAuth?.currentUser;
+  if(!user)return;
+  $("authVerifyError").textContent="";
+  try{
+    $("authVerifyCheckBtn").disabled=true;
+    await centralFirebaseApi.reload(user);
+    if(!user.emailVerified){
+      $("authVerifyError").textContent="O e-mail ainda não foi confirmado. Abra a mensagem recebida e toque no link de verificação.";
+      return
+    }
+    await user.getIdToken(true);
+    beginCentralVerification();
+    await evaluateCentralAccess(user)
+  }catch(err){
+    console.error(err);
+    $("authVerifyError").textContent="Não foi possível confirmar agora. Tente novamente."
+  }finally{
+    $("authVerifyCheckBtn").disabled=false
+  }
+}
+
+async function resetPasswordCentral(){
+  const email=$("authEmail").value.trim();
+  $("authError").textContent="";
+  $("authSuccess").textContent="";
+  if(!email){
+    $("authError").textContent="Digite seu e-mail acima para redefinir a senha.";
+    return
+  }
+  try{
+    centralAuth.languageCode="pt-BR";
+    await centralFirebaseApi.sendPasswordResetEmail(centralAuth,email);
+    $("authSuccess").textContent="Se existir uma conta com esse e-mail, você receberá as instruções para criar uma nova senha."
+  }catch(err){
+    console.error(err);
+    // Mensagem genérica para não revelar se um e-mail possui conta.
+    $("authSuccess").textContent="Se existir uma conta com esse e-mail, você receberá as instruções para criar uma nova senha."
+  }
+}
+
+function showMfaLogin(err){
+  try{
+    centralMfaResolver=centralFirebaseApi.getMultiFactorResolver(centralAuth,err);
+    const totpHint=centralMfaResolver.hints.find(h=>h.factorId===centralFirebaseApi.TotpMultiFactorGenerator.FACTOR_ID);
+    if(!totpHint)throw new Error("Nenhum fator TOTP encontrado.");
+    lockCentral();
+    setAuthView("authMfaView");
+    $("authMfaCode").value="";
+    $("authMfaError").textContent="";
+    setTimeout(()=>$("authMfaCode").focus(),50)
+  }catch(e){
+    console.error(e);
+    $("authError").textContent="Esta conta exige uma segunda etapa que esta versão não conseguiu reconhecer."
+  }
+}
+
+async function submitMfaLogin(){
+  const code=$("authMfaCode").value.trim().replace(/\s/g,"");
+  $("authMfaError").textContent="";
+  if(!centralMfaResolver||!code){
+    $("authMfaError").textContent="Digite o código do autenticador.";
+    return
+  }
+  try{
+    $("authMfaSubmitBtn").disabled=true;
+    const hint=centralMfaResolver.hints.find(h=>h.factorId===centralFirebaseApi.TotpMultiFactorGenerator.FACTOR_ID);
+    const assertion=centralFirebaseApi.TotpMultiFactorGenerator.assertionForSignIn(hint.uid,code);
+    await centralMfaResolver.resolveSignIn(assertion);
+    centralMfaResolver=null
+  }catch(err){
+    console.error(err);
+    $("authMfaError").textContent="Código inválido ou expirado. Gere um novo código no autenticador."
+  }finally{
+    $("authMfaSubmitBtn").disabled=false
+  }
+}
+
+async function updateMfaSecurityStatus(){
+  const row=$("securityMfaRow");
+  if(!row||!centralCurrentUser||centralUserData?.admin!==true){
+    if(row)row.hidden=true;
+    return
+  }
+  row.hidden=false;
+  try{
+    const factors=centralFirebaseApi.multiFactor(centralCurrentUser).enrolledFactors||[];
+    const totp=factors.some(f=>f.factorId===centralFirebaseApi.TotpMultiFactorGenerator.FACTOR_ID);
+    $("securityMfaStatus").textContent=totp?"Ativa":"Não configurada";
+    $("securityMfaStatus").className="security-chip "+(totp?"ok":"warn");
+    $("securityMfaText").textContent=totp
+      ?"Sua conta de ADM exige um código do aplicativo autenticador ao entrar."
+      :"Ative TOTP depois de habilitar MFA no Firebase Authentication with Identity Platform.";
+    $("setupMfaBtn").hidden=totp
+  }catch(err){
+    console.warn("Status MFA:",err);
+    $("securityMfaText").textContent="Não foi possível verificar o status da autenticação em 2 etapas."
+  }
+}
+
+function openMfaSetup(){
+  if(!centralCurrentUser||centralUserData?.admin!==true)return;
+  centralTotpSecret=null;
+  $("mfaCurrentPassword").value="";
+  $("mfaEnrollCode").value="";
+  $("mfaSetupError").textContent="";
+  $("mfaEnrollError").textContent="";
+  $("mfaReauthStep").hidden=false;
+  $("mfaSecretStep").hidden=true;
+  $("mfaSetupModal").classList.add("open")
+}
+
+async function generateMfaSecret(){
+  const password=$("mfaCurrentPassword").value;
+  $("mfaSetupError").textContent="";
+  if(!password){
+    $("mfaSetupError").textContent="Digite sua senha atual.";
+    return
+  }
+  try{
+    $("mfaGenerateBtn").disabled=true;
+    const credential=centralFirebaseApi.EmailAuthProvider.credential(centralCurrentUser.email,password);
+    await centralFirebaseApi.reauthenticateWithCredential(centralCurrentUser,credential);
+    const session=await centralFirebaseApi.multiFactor(centralCurrentUser).getSession();
+    centralTotpSecret=await centralFirebaseApi.TotpMultiFactorGenerator.generateSecret(session);
+    $("mfaSecretCode").textContent=centralTotpSecret.secretKey;
+    $("mfaReauthStep").hidden=true;
+    $("mfaSecretStep").hidden=false
+  }catch(err){
+    console.error("Gerar TOTP:",err);
+    const code=String(err?.code||"");
+    if(code.includes("invalid-credential")||code.includes("wrong-password")){
+      $("mfaSetupError").textContent="Senha atual incorreta."
+    }else{
+      $("mfaSetupError").textContent="Não foi possível iniciar o TOTP. Verifique se Authentication with Identity Platform e TOTP estão ativados no Firebase."
+    }
+  }finally{
+    $("mfaGenerateBtn").disabled=false
+  }
+}
+
+async function enrollMfaTotp(){
+  const code=$("mfaEnrollCode").value.trim().replace(/\s/g,"");
+  $("mfaEnrollError").textContent="";
+  if(!centralTotpSecret||!code){
+    $("mfaEnrollError").textContent="Digite o código mostrado no autenticador.";
+    return
+  }
+  try{
+    $("mfaEnrollBtn").disabled=true;
+    const assertion=centralFirebaseApi.TotpMultiFactorGenerator.assertionForEnrollment(centralTotpSecret,code);
+    await centralFirebaseApi.multiFactor(centralCurrentUser).enroll(assertion,"Central de Apps - ADM");
+    centralTotpSecret=null;
+    $("mfaSetupModal").classList.remove("open");
+    toast("Autenticação em 2 etapas ativada.");
+    await updateMfaSecurityStatus()
+  }catch(err){
+    console.error("Ativar TOTP:",err);
+    $("mfaEnrollError").textContent="Código inválido ou expirado. Tente com o código atual do autenticador."
+  }finally{
+    $("mfaEnrollBtn").disabled=false
+  }
+}
+
+async function evaluateCentralAccess(user){
+  beginCentralVerification();
   centralCurrentUser=user||null;
   centralUserData=null;
   $("firebaseSecurityCard").hidden=true;
@@ -622,13 +897,28 @@ async function evaluateCentralAccess(user){
 
   if(!user){
     clearCentralAccessCache();
+    lockCentral();
     setAuthView("authLoginView");
     $("authError").textContent="";
+    $("authSuccess").textContent="";
     return
   }
 
   const api=centralFirebaseApi;
   try{
+    await api.reload(user);
+
+    if(!user.emailVerified){
+      showEmailVerification(
+        user,
+        "Confirme seu e-mail antes de criar ou enviar uma solicitação de acesso."
+      );
+      return
+    }
+
+    // Atualiza o token para que as regras do Firestore recebam email_verified=true.
+    await user.getIdToken(true);
+
     const userRef=api.doc(centralDb,"usuarios",user.uid);
     const userSnap=await api.getDoc(userRef);
 
@@ -642,10 +932,9 @@ async function evaluateCentralAccess(user){
       clearCentralAccessCache();
       const req=await ensureAccessRequest(user,"usuario");
       if(req?.status==="negado"){
-        clearCentralAccessCache();
-        showPending(user,"Solicitação negada","Seu pedido de acesso foi negado. Ele não será recriado automaticamente. Entre em contato com o ADM se precisar de uma nova análise.");
+        showPending(user,"Solicitação negada","Seu pedido de acesso foi negado. Entre em contato com o ADM se precisar de uma nova análise.");
       }else{
-        showPending(user,"Conta aguardando aprovação","Sua conta foi criada. Agora envie a mensagem para o ADM e aguarde a aprovação.");
+        showPending(user,"Conta aguardando aprovação","Seu e-mail foi confirmado. Agora envie a mensagem para o ADM e aguarde a aprovação.");
       }
       return
     }
@@ -674,10 +963,9 @@ async function evaluateCentralAccess(user){
       clearCentralAccessCache();
       const req=await ensureAccessRequest(user,"dispositivo");
       if(req?.status==="negado"){
-        clearCentralAccessCache();
         showPending(user,"Dispositivo não autorizado","O acesso deste dispositivo foi negado e continuará bloqueado até o ADM liberá-lo.");
       }else{
-        showPending(user,"Novo dispositivo detectado","Sua conta é válida, mas este celular/navegador ainda precisa ser aprovado. Envie a mensagem pronta para o ADM.");
+        showPending(user,"Novo dispositivo detectado","Sua conta é válida, mas este celular ou navegador ainda precisa ser aprovado. Envie a mensagem pronta para o ADM.");
       }
       return
     }
@@ -695,36 +983,63 @@ async function evaluateCentralAccess(user){
   }
 }
 function grantCentralAccess(user,data){
-  cacheCentralAccess(user);
   centralCurrentUser=user;
   centralUserData=data||{};
   $("firebaseSecurityCard").hidden=false;
   $("securityEmail").textContent=user.email||"—";
+  $("securityEmailVerified").textContent=user.emailVerified?"E-mail verificado":"E-mail não verificado";
+  $("securityEmailVerified").className="security-chip "+(user.emailVerified?"ok":"warn");
   $("securityDevice").textContent=centralDeviceId();
   $("securityRole").textContent=data?.admin===true?"Administrador":"Usuário";
   $("adminSecurityCard").hidden=data?.admin!==true;
   unlockCentral();
   if(data?.admin===true)loadAdminData();
+  updateMfaSecurityStatus();
 }
 async function loginCentral(){
   const email=$("authEmail").value.trim(),password=$("authPassword").value;
   $("authError").textContent="";
+  $("authSuccess").textContent="";
   if(!email||!password){$("authError").textContent="Preencha e-mail e senha.";return}
   try{
     $("authLoginBtn").disabled=true;
     await centralFirebaseApi.signInWithEmailAndPassword(centralAuth,email,password)
-  }catch(err){$("authError").textContent=authMessage(err)}
-  finally{$("authLoginBtn").disabled=false}
+  }catch(err){
+    if(err?.code==="auth/multi-factor-auth-required"){
+      showMfaLogin(err)
+    }else{
+      $("authError").textContent=authMessage(err)
+    }
+  }finally{$("authLoginBtn").disabled=false}
 }
 async function signupCentral(){
   const email=$("authEmail").value.trim(),password=$("authPassword").value;
   $("authError").textContent="";
-  if(!email||!password){$("authError").textContent="Digite seu e-mail e crie uma senha com pelo menos 6 caracteres.";return}
+  $("authSuccess").textContent="";
+  if(!email||!password){
+    $("authError").textContent="Digite seu e-mail e crie uma senha forte.";
+    return
+  }
+
+  const passwordError=await validateStrongPassword(password);
+  if(passwordError){
+    $("authError").textContent=passwordError;
+    return
+  }
+
   try{
     $("authSignupBtn").disabled=true;
-    await centralFirebaseApi.createUserWithEmailAndPassword(centralAuth,email,password)
-  }catch(err){$("authError").textContent=authMessage(err)}
-  finally{$("authSignupBtn").disabled=false}
+    centralAuth.languageCode="pt-BR";
+    const cred=await centralFirebaseApi.createUserWithEmailAndPassword(centralAuth,email,password);
+    await centralFirebaseApi.sendEmailVerification(cred.user);
+    showEmailVerification(
+      cred.user,
+      "Sua conta foi criada. Enviamos um e-mail de confirmação. Confirme o endereço antes de solicitar acesso ao ADM."
+    );
+    $("authVerifySuccess").textContent="E-mail de verificação enviado."
+  }catch(err){
+    $("authError").textContent=authMessage(err)
+  }finally{$("authSignupBtn").disabled=false}
 }
 async function loadPendingRequests(){
   if(!centralUserData?.admin)return;
@@ -999,7 +1314,7 @@ async function logoutCentral(){
 }
 
 async function initCentralAuth(){
-  lockCentral();
+  beginCentralVerification();
   setAuthView("authLoadingView");
   $("authWhatsapp").href=waLink("Olá! Gostaria de solicitar acesso à Central de Apps.");
   if(!firebaseConfigured()){
@@ -1014,10 +1329,8 @@ async function initCentralAuth(){
       import(`https://www.gstatic.com/firebasejs/${v}/firebase-firestore.js`)
     ]);
     const app=appM.initializeApp(window.CENTRAL_FIREBASE_CONFIG);
-    centralAuth=authM.getAuth(app);
-    centralDb=fsM.getFirestore(app);
-    centralFirebaseApi={...authM,...fsM};
 
+    // App Check deve ser iniciado antes de usar os serviços protegidos.
     if(window.CENTRAL_APP_CHECK_SITE_KEY){
       try{
         const ac=await import(`https://www.gstatic.com/firebasejs/${v}/firebase-app-check.js`);
@@ -1028,14 +1341,38 @@ async function initCentralAuth(){
       }catch(err){console.warn("App Check não iniciado:",err)}
     }
 
+    centralAuth=authM.getAuth(app);
+    centralDb=fsM.getFirestore(app);
+    centralFirebaseApi={...authM,...fsM};
+
     await authM.setPersistence(centralAuth,authM.browserLocalPersistence);
 
     $("authLoginBtn").onclick=loginCentral;
     $("authSignupBtn").onclick=signupCentral;
+    $("authForgotBtn").onclick=resetPasswordCentral;
     $("authPassword").addEventListener("keydown",e=>{if(e.key==="Enter")loginCentral()});
+
+    $("authVerifyResendBtn").onclick=resendVerificationEmail;
+    $("authVerifyCheckBtn").onclick=checkVerifiedEmail;
+    $("authVerifyLogout").onclick=logoutCentral;
+
+    $("authMfaSubmitBtn").onclick=submitMfaLogin;
+    $("authMfaCode").addEventListener("keydown",e=>{if(e.key==="Enter")submitMfaLogin()});
+    $("authMfaBackBtn").onclick=async()=>{
+      centralMfaResolver=null;
+      try{await authM.signOut(centralAuth)}catch{}
+      lockCentral();
+      setAuthView("authLoginView")
+    };
+
     $("authPendingLogout").onclick=logoutCentral;
     $("firebaseLogoutBtn").onclick=logoutCentral;
     $("refreshRequestsBtn").onclick=loadAdminData;
+
+    $("setupMfaBtn").onclick=openMfaSetup;
+    $("closeMfaSetup").onclick=()=>$("mfaSetupModal").classList.remove("open");
+    $("mfaGenerateBtn").onclick=generateMfaSecret;
+    $("mfaEnrollBtn").onclick=enrollMfaTotp;
 
     authM.onAuthStateChanged(centralAuth,user=>evaluateCentralAccess(user));
 
@@ -1166,6 +1503,13 @@ function filterCards(){
   $("noResults").hidden=visible!==0
 }
 
+document.addEventListener("click",e=>{
+  if(document.body.classList.contains("access-verifying")&&e.target.closest("[data-open],[data-copy],.open-btn,.copy-btn")){
+    e.preventDefault();
+    e.stopImmediatePropagation();
+  }
+},true);
+
 document.addEventListener("click",async e=>{
   const adminTab=e.target.closest("[data-admin-tab]");if(adminTab){switchAdminTab(adminTab.dataset.adminTab);return}
   const approve=e.target.closest("[data-approve-request]");if(approve){await approveRequest(approve.dataset.approveRequest);return}
@@ -1251,7 +1595,7 @@ $("installBtn").onclick=async()=>{
 
 let reg=null;
 if("serviceWorker" in navigator){
-  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=28",{updateViaCache:"none"})}catch{}})
+  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=30",{updateViaCache:"none"})}catch{}})
 }
 $("checkUpdateBtn").onclick=async()=>{if(!reg)return toast("Service worker ainda não está pronto.");try{await reg.update();toast("Verificação concluída.")}catch{toast("Não foi possível verificar.")}};
 
