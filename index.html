@@ -1188,7 +1188,7 @@ async function initCentralAuth(){
       import(`https://www.gstatic.com/firebasejs/${v}/firebase-auth.js`),
       import(`https://www.gstatic.com/firebasejs/${v}/firebase-firestore.js`)
     ]);
-    const app=appM.initializeApp(window.CENTRAL_FIREBASE_CONFIG,"central-access");
+    const app=appM.initializeApp(window.CENTRAL_FIREBASE_CONFIG);
 
     // App Check deve ser iniciado antes de usar os serviços protegidos.
     if(window.CENTRAL_APP_CHECK_SITE_KEY){
@@ -1435,7 +1435,7 @@ $("installBtn").onclick=async()=>{
 
 let reg=null;
 if("serviceWorker" in navigator){
-  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=35",{updateViaCache:"none"})}catch{}})
+  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=34",{updateViaCache:"none"})}catch{}})
 }
 $("checkUpdateBtn").onclick=async()=>{if(!reg)return toast("Service worker ainda não está pronto.");try{await reg.update();toast("Verificação concluída.")}catch{toast("Não foi possível verificar.")}};
 
