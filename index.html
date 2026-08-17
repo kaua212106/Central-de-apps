@@ -124,8 +124,6 @@ body.access-verifying .copy-btn{opacity:.62}
 .security-chip{display:inline-flex;align-items:center;gap:5px;margin-top:6px;padding:5px 8px;border-radius:999px;font-size:9px;font-weight:850}
 .security-chip.ok{background:#e8f5ef;color:#087443}
 .security-chip.warn{background:#fff4db;color:#a16207}
-.mfa-secret{display:block;margin:10px 0;padding:11px;border-radius:12px;background:#f3f5fa;color:#34405a;font-family:monospace;font-size:12px;word-break:break-all;user-select:all}
-.mfa-help{text-align:left;font-size:10px!important;line-height:1.5!important}
 
 </style>
 </head>
@@ -170,16 +168,6 @@ body.access-verifying .copy-btn{opacity:.62}
       <div class="auth-error" id="authVerifyError"></div>
       <div class="auth-success" id="authVerifySuccess"></div>
       <button class="auth-link-btn" id="authVerifyLogout">Usar outra conta</button>
-    </div>
-
-    <div id="authMfaView" hidden>
-      <div class="auth-status">🛡️ Verificação em 2 etapas</div>
-      <h2>Código do autenticador</h2>
-      <p>Digite o código de 6 dígitos mostrado no seu aplicativo autenticador.</p>
-      <input class="auth-field" id="authMfaCode" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Código de 6 dígitos">
-      <div class="auth-error" id="authMfaError"></div>
-      <button class="auth-enter" id="authMfaSubmitBtn">Confirmar código</button>
-      <button class="auth-link-btn" id="authMfaBackBtn">Voltar ao login</button>
     </div>
 
     <div id="authPendingView" hidden>
@@ -502,12 +490,6 @@ body.access-verifying .copy-btn{opacity:.62}
     <div class="section-title"><h2>🔐 Conta e segurança</h2><span class="tag" id="securityRole">Usuário</span></div>
     <div class="security-info"><b>Conta conectada</b><small id="securityEmail">—</small><span class="security-chip ok" id="securityEmailVerified">E-mail verificado</span></div>
     <div class="security-info"><b>Código deste dispositivo</b><small id="securityDevice">—</small></div>
-    <div class="security-info" id="securityMfaRow" hidden>
-      <b>Verificação em 2 etapas (ADM)</b>
-      <small id="securityMfaText">Verificando...</small>
-      <span class="security-chip warn" id="securityMfaStatus">Não configurada</span>
-      <button class="btn btn-neutral" id="setupMfaBtn">Configurar autenticador (TOTP)</button>
-    </div>
     <button class="btn btn-neutral" id="firebaseLogoutBtn">Sair da conta</button>
   </div>
 
@@ -558,23 +540,6 @@ body.access-verifying .copy-btn{opacity:.62}
   <button class="btn btn-neutral" data-go="appsPage">▦ Todos os aplicativos</button>
   <button class="btn btn-neutral" data-go="settingsPage">⚙ Ajustes</button>
 </div></div>
-<div class="modal" id="mfaSetupModal"><div class="modal-box">
-  <div class="modal-title"><h2>🛡️ Autenticação em 2 etapas</h2><button class="close" id="closeMfaSetup">×</button></div>
-  <div id="mfaReauthStep">
-    <p class="mfa-help">Para ativar o autenticador, confirme primeiro a senha atual da sua conta de ADM.</p>
-    <input class="auth-field" id="mfaCurrentPassword" type="password" autocomplete="current-password" placeholder="Senha atual">
-    <div class="auth-error" id="mfaSetupError"></div>
-    <button class="btn btn-primary" id="mfaGenerateBtn">Continuar</button>
-  </div>
-  <div id="mfaSecretStep" hidden>
-    <p class="mfa-help">No Google Authenticator ou outro aplicativo TOTP, escolha adicionar uma chave manualmente e use a chave abaixo. Depois digite o código gerado.</p>
-    <span class="mfa-secret" id="mfaSecretCode">—</span>
-    <input class="auth-field" id="mfaEnrollCode" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Código de 6 dígitos">
-    <div class="auth-error" id="mfaEnrollError"></div>
-    <button class="btn btn-primary" id="mfaEnrollBtn">Ativar 2 etapas</button>
-  </div>
-</div></div>
-
 <div class="toast" id="toast"></div>
 
 <script src="firebase-config.js"></script>
@@ -592,8 +557,6 @@ const CENTRAL_ACCESS_CACHE_TTL=0;
 const CENTRAL_WHATSAPP="5517992250453";
 let centralAuth=null,centralDb=null,centralFirebaseApi=null,centralCurrentUser=null,centralUserData=null;
 let pendingRequestMap=new Map();
-let centralMfaResolver=null;
-let centralTotpSecret=null;
 
 function centralDeviceId(){
   let id="";
@@ -611,7 +574,7 @@ function clearCentralAccessCache(){
 }
 
 function setAuthView(name){
-  const ids=["authLoadingView","authLoginView","authVerifyView","authMfaView","authPendingView","authConfigView"];
+  const ids=["authLoadingView","authLoginView","authVerifyView","authPendingView","authConfigView"];
   ids.forEach(id=>$(id).hidden=id!==name);
 }
 function beginCentralVerification(){
@@ -765,129 +728,6 @@ async function resetPasswordCentral(){
   }
 }
 
-function showMfaLogin(err){
-  try{
-    centralMfaResolver=centralFirebaseApi.getMultiFactorResolver(centralAuth,err);
-    const totpHint=centralMfaResolver.hints.find(h=>h.factorId===centralFirebaseApi.TotpMultiFactorGenerator.FACTOR_ID);
-    if(!totpHint)throw new Error("Nenhum fator TOTP encontrado.");
-    lockCentral();
-    setAuthView("authMfaView");
-    $("authMfaCode").value="";
-    $("authMfaError").textContent="";
-    setTimeout(()=>$("authMfaCode").focus(),50)
-  }catch(e){
-    console.error(e);
-    $("authError").textContent="Esta conta exige uma segunda etapa que esta versão não conseguiu reconhecer."
-  }
-}
-
-async function submitMfaLogin(){
-  const code=$("authMfaCode").value.trim().replace(/\s/g,"");
-  $("authMfaError").textContent="";
-  if(!centralMfaResolver||!code){
-    $("authMfaError").textContent="Digite o código do autenticador.";
-    return
-  }
-  try{
-    $("authMfaSubmitBtn").disabled=true;
-    const hint=centralMfaResolver.hints.find(h=>h.factorId===centralFirebaseApi.TotpMultiFactorGenerator.FACTOR_ID);
-    const assertion=centralFirebaseApi.TotpMultiFactorGenerator.assertionForSignIn(hint.uid,code);
-    await centralMfaResolver.resolveSignIn(assertion);
-    centralMfaResolver=null
-  }catch(err){
-    console.error(err);
-    $("authMfaError").textContent="Código inválido ou expirado. Gere um novo código no autenticador."
-  }finally{
-    $("authMfaSubmitBtn").disabled=false
-  }
-}
-
-async function updateMfaSecurityStatus(){
-  const row=$("securityMfaRow");
-  if(!row||!centralCurrentUser||centralUserData?.admin!==true){
-    if(row)row.hidden=true;
-    return
-  }
-  row.hidden=false;
-  try{
-    const factors=centralFirebaseApi.multiFactor(centralCurrentUser).enrolledFactors||[];
-    const totp=factors.some(f=>f.factorId===centralFirebaseApi.TotpMultiFactorGenerator.FACTOR_ID);
-    $("securityMfaStatus").textContent=totp?"Ativa":"Não configurada";
-    $("securityMfaStatus").className="security-chip "+(totp?"ok":"warn");
-    $("securityMfaText").textContent=totp
-      ?"Sua conta de ADM exige um código do aplicativo autenticador ao entrar."
-      :"Ative TOTP depois de habilitar MFA no Firebase Authentication with Identity Platform.";
-    $("setupMfaBtn").hidden=totp
-  }catch(err){
-    console.warn("Status MFA:",err);
-    $("securityMfaText").textContent="Não foi possível verificar o status da autenticação em 2 etapas."
-  }
-}
-
-function openMfaSetup(){
-  if(!centralCurrentUser||centralUserData?.admin!==true)return;
-  centralTotpSecret=null;
-  $("mfaCurrentPassword").value="";
-  $("mfaEnrollCode").value="";
-  $("mfaSetupError").textContent="";
-  $("mfaEnrollError").textContent="";
-  $("mfaReauthStep").hidden=false;
-  $("mfaSecretStep").hidden=true;
-  $("mfaSetupModal").classList.add("open")
-}
-
-async function generateMfaSecret(){
-  const password=$("mfaCurrentPassword").value;
-  $("mfaSetupError").textContent="";
-  if(!password){
-    $("mfaSetupError").textContent="Digite sua senha atual.";
-    return
-  }
-  try{
-    $("mfaGenerateBtn").disabled=true;
-    const credential=centralFirebaseApi.EmailAuthProvider.credential(centralCurrentUser.email,password);
-    await centralFirebaseApi.reauthenticateWithCredential(centralCurrentUser,credential);
-    const session=await centralFirebaseApi.multiFactor(centralCurrentUser).getSession();
-    centralTotpSecret=await centralFirebaseApi.TotpMultiFactorGenerator.generateSecret(session);
-    $("mfaSecretCode").textContent=centralTotpSecret.secretKey;
-    $("mfaReauthStep").hidden=true;
-    $("mfaSecretStep").hidden=false
-  }catch(err){
-    console.error("Gerar TOTP:",err);
-    const code=String(err?.code||"");
-    if(code.includes("invalid-credential")||code.includes("wrong-password")){
-      $("mfaSetupError").textContent="Senha atual incorreta."
-    }else{
-      $("mfaSetupError").textContent="Não foi possível iniciar o TOTP. Verifique se Authentication with Identity Platform e TOTP estão ativados no Firebase."
-    }
-  }finally{
-    $("mfaGenerateBtn").disabled=false
-  }
-}
-
-async function enrollMfaTotp(){
-  const code=$("mfaEnrollCode").value.trim().replace(/\s/g,"");
-  $("mfaEnrollError").textContent="";
-  if(!centralTotpSecret||!code){
-    $("mfaEnrollError").textContent="Digite o código mostrado no autenticador.";
-    return
-  }
-  try{
-    $("mfaEnrollBtn").disabled=true;
-    const assertion=centralFirebaseApi.TotpMultiFactorGenerator.assertionForEnrollment(centralTotpSecret,code);
-    await centralFirebaseApi.multiFactor(centralCurrentUser).enroll(assertion,"Central de Apps - ADM");
-    centralTotpSecret=null;
-    $("mfaSetupModal").classList.remove("open");
-    toast("Autenticação em 2 etapas ativada.");
-    await updateMfaSecurityStatus()
-  }catch(err){
-    console.error("Ativar TOTP:",err);
-    $("mfaEnrollError").textContent="Código inválido ou expirado. Tente com o código atual do autenticador."
-  }finally{
-    $("mfaEnrollBtn").disabled=false
-  }
-}
-
 async function evaluateCentralAccess(user){
   beginCentralVerification();
   centralCurrentUser=user||null;
@@ -994,7 +834,6 @@ function grantCentralAccess(user,data){
   $("adminSecurityCard").hidden=data?.admin!==true;
   unlockCentral();
   if(data?.admin===true)loadAdminData();
-  updateMfaSecurityStatus();
 }
 async function loginCentral(){
   const email=$("authEmail").value.trim(),password=$("authPassword").value;
@@ -1005,11 +844,7 @@ async function loginCentral(){
     $("authLoginBtn").disabled=true;
     await centralFirebaseApi.signInWithEmailAndPassword(centralAuth,email,password)
   }catch(err){
-    if(err?.code==="auth/multi-factor-auth-required"){
-      showMfaLogin(err)
-    }else{
-      $("authError").textContent=authMessage(err)
-    }
+    $("authError").textContent=authMessage(err)
   }finally{$("authLoginBtn").disabled=false}
 }
 async function signupCentral(){
@@ -1355,25 +1190,9 @@ async function initCentralAuth(){
     $("authVerifyResendBtn").onclick=resendVerificationEmail;
     $("authVerifyCheckBtn").onclick=checkVerifiedEmail;
     $("authVerifyLogout").onclick=logoutCentral;
-
-    $("authMfaSubmitBtn").onclick=submitMfaLogin;
-    $("authMfaCode").addEventListener("keydown",e=>{if(e.key==="Enter")submitMfaLogin()});
-    $("authMfaBackBtn").onclick=async()=>{
-      centralMfaResolver=null;
-      try{await authM.signOut(centralAuth)}catch{}
-      lockCentral();
-      setAuthView("authLoginView")
-    };
-
     $("authPendingLogout").onclick=logoutCentral;
     $("firebaseLogoutBtn").onclick=logoutCentral;
     $("refreshRequestsBtn").onclick=loadAdminData;
-
-    $("setupMfaBtn").onclick=openMfaSetup;
-    $("closeMfaSetup").onclick=()=>$("mfaSetupModal").classList.remove("open");
-    $("mfaGenerateBtn").onclick=generateMfaSecret;
-    $("mfaEnrollBtn").onclick=enrollMfaTotp;
-
     authM.onAuthStateChanged(centralAuth,user=>evaluateCentralAccess(user));
 
     const centralAccessRecheck=()=>{
@@ -1595,7 +1414,7 @@ $("installBtn").onclick=async()=>{
 
 let reg=null;
 if("serviceWorker" in navigator){
-  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=30",{updateViaCache:"none"})}catch{}})
+  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=31",{updateViaCache:"none"})}catch{}})
 }
 $("checkUpdateBtn").onclick=async()=>{if(!reg)return toast("Service worker ainda não está pronto.");try{await reg.update();toast("Verificação concluída.")}catch{toast("Não foi possível verificar.")}};
 
