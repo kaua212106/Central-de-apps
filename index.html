@@ -762,6 +762,10 @@ const CENTRAL_DEVICE_KEY="central-device-id-v1";
 const CENTRAL_ACCESS_CACHE_KEY="central-access-cache-v1";
 const CENTRAL_ACCESS_CACHE_TTL=0;
 const CENTRAL_WHATSAPP="5517992250453";
+const CENTRAL_ADMIN_UIDS=[
+  "zwSS1ZH9VGf1Ngh088umzaqf0Oa2",
+  "pX4jJrky58hteyAqngFID2RVqNr2"
+];
 let centralAuth=null,centralDb=null,centralFirebaseApi=null,centralCurrentUser=null,centralUserData=null;
 let pendingRequestMap=new Map();
 
@@ -1161,18 +1165,19 @@ function renderAuthorizedUsers(users){
   if(!allowed.length){box.innerHTML='<div class="empty">Nenhum usuário autorizado.</div>';return}
   box.innerHTML=allowed.map(u=>{
     const isSelf=u.id===centralCurrentUser?.uid;
+    const isAdminUser=CENTRAL_ADMIN_UIDS.includes(u.id);
     const activeDevices=(u.devices||[]).filter(d=>d.ativo===true&&d.bloqueado!==true);
     const devices=activeDevices.length?activeDevices.map(d=>`
       <div class="device-row">
         <small>📱 ${escapeHtml(d.deviceId||d.id)}</small>
-        ${isSelf?'':`<button class="admin-action block-btn" data-block-device="${escapeHtml(u.id)}" data-device-id="${escapeHtml(d.id)}">Bloquear dispositivo</button>`}
+        ${isAdminUser?'':`<button class="admin-action block-btn" data-block-device="${escapeHtml(u.id)}" data-device-id="${escapeHtml(d.id)}">Bloquear dispositivo</button>`}
       </div>`).join(""):'<small style="margin-top:8px">Nenhum dispositivo registrado.</small>';
     return `<div class="user-admin-item">
       <b>${escapeHtml(u.email||u.id)}</b>
       <small>UID: ${escapeHtml(u.id)}</small>
-      ${isSelf?'<span class="admin-badge">Administrador</span>':''}
+      ${isAdminUser?'<span class="admin-badge">Administrador</span>':''}
       ${devices}
-      ${isSelf?'':`
+      ${isAdminUser?'':`
         <button class="admin-action block-btn" data-block-user="${escapeHtml(u.id)}">Bloquear usuário</button>
         <button class="admin-action remove-access-btn" data-remove-access="${escapeHtml(u.id)}">Excluir acesso</button>
       `}
@@ -1229,6 +1234,7 @@ function switchAdminTab(name){
 }
 
 async function removeUserAccess(uid){
+  if(CENTRAL_ADMIN_UIDS.includes(uid))return toast("Uma conta de ADM não pode ter o acesso excluído por este painel.");
   if(uid===centralCurrentUser?.uid)return toast("Você não pode excluir o acesso da própria conta de ADM.");
   if(!confirm("Excluir o acesso deste usuário? A conta de e-mail e senha continuará existindo, mas ele terá que solicitar acesso novamente."))return;
 
@@ -1260,6 +1266,7 @@ async function removeUserAccess(uid){
 }
 
 async function blockUser(uid){
+  if(CENTRAL_ADMIN_UIDS.includes(uid))return toast("Uma conta de ADM não pode ser bloqueada por este painel.");
   if(uid===centralCurrentUser?.uid)return toast("Você não pode bloquear sua própria conta de ADM.");
   if(!confirm("Bloquear este usuário? Ele perderá o acesso até você liberar novamente."))return;
   const api=centralFirebaseApi;
@@ -1583,7 +1590,7 @@ $("installBtn").onclick=async()=>{
 
 let reg=null;
 if("serviceWorker" in navigator){
-  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=41",{updateViaCache:"none"})}catch{}})
+  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=42",{updateViaCache:"none"})}catch{}})
 }
 $("checkUpdateBtn").onclick=async()=>{if(!reg)return toast("Service worker ainda não está pronto.");try{await reg.update();toast("Verificação concluída.")}catch{toast("Não foi possível verificar.")}};
 
