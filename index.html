@@ -85,7 +85,25 @@ body.access-locked .firebase-gate{display:flex}
 .pending-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}
 .pending-actions button{min-height:38px;border-radius:11px;font-size:10px;font-weight:850}
 .approve-btn{background:#e8f5ef;color:#087443}
+
 .deny-btn{background:#fff1f2;color:#c83a47}
+.auth-guide{margin:12px 0 4px;padding:12px 13px;border-radius:14px;background:#f5f7ff;border:1px solid #e1e6ff;text-align:left}
+.auth-guide b{display:block;font-size:11px;color:#4656c8;margin-bottom:5px}
+.auth-guide span{display:block;font-size:10px;line-height:1.5;color:#687187}
+.admin-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:12px 0}
+.admin-tab{min-height:38px;border-radius:11px;background:#f1f3f7;color:#687187;font-size:9px;font-weight:850}
+.admin-tab.active{background:rgba(102,116,232,.13);color:#5363dc;border:1px solid rgba(102,116,232,.15)}
+.admin-panel-view[hidden]{display:none}
+.user-admin-item{padding:12px;border:1px solid #e7eaf1;border-radius:14px;background:var(--soft);margin-top:8px}
+.user-admin-item b{display:block;font-size:12px}
+.user-admin-item small{display:block;color:var(--muted);font-size:9px;line-height:1.45;margin-top:3px;word-break:break-all}
+.admin-badge{display:inline-flex;margin-top:6px;padding:4px 7px;border-radius:999px;background:#eeeaff;color:#6246c7;font-size:8px;font-weight:850}
+.device-row{margin-top:8px;padding:9px;border-radius:11px;background:var(--surface);border:1px solid var(--border)}
+.device-row small{margin:0 0 6px}
+.admin-action{width:100%;min-height:36px;border-radius:10px;font-size:9px;font-weight:850;margin-top:7px}
+.block-btn{background:#fff1f2;color:#c83a47}
+.unblock-btn{background:#e8f5ef;color:#087443}
+
 
 </style>
 </head>
@@ -97,14 +115,18 @@ body.access-locked .firebase-gate{display:flex}
 
     <div id="authLoginView">
       <h2>Central Privada</h2>
-      <p>Entre com sua conta autorizada. Um novo dispositivo precisa ser aprovado pelo administrador.</p>
-      <input class="auth-field" id="authEmail" type="email" placeholder="E-mail" autocomplete="email">
-      <input class="auth-field" id="authPassword" type="password" placeholder="Senha" autocomplete="current-password">
+      <p>Se você já possui uma conta autorizada, informe seu e-mail e sua senha para entrar.</p>
+      <div class="auth-guide">
+        <b>Primeiro acesso?</b>
+        <span>Digite o seu próprio e-mail, crie uma senha com pelo menos 6 caracteres e toque em <strong>Criar solicitação</strong>. Na próxima tela, envie a mensagem pronta para o ADM pelo WhatsApp.</span>
+      </div>
+      <input class="auth-field" id="authEmail" type="email" placeholder="Seu e-mail" autocomplete="email">
+      <input class="auth-field" id="authPassword" type="password" placeholder="Sua senha" autocomplete="current-password">
       <div class="auth-error" id="authError"></div>
       <button class="auth-enter" id="authLoginBtn">Entrar</button>
-      <button class="auth-secondary" id="authSignupBtn">Primeiro acesso / criar solicitação</button>
+      <button class="auth-secondary" id="authSignupBtn">Criar solicitação</button>
       <a class="auth-contact" id="authWhatsapp" href="https://wa.me/5517992250453" target="_blank" rel="noopener">💬 Falar com o ADM pelo WhatsApp</a>
-      <p class="auth-note">Criar uma conta não libera a Central automaticamente. O administrador precisa aprovar o usuário e o dispositivo.</p>
+      <p class="auth-note">A conta só será liberada depois que o administrador aprovar o acesso.</p>
     </div>
 
     <div id="authPendingView" hidden>
@@ -112,7 +134,11 @@ body.access-locked .firebase-gate{display:flex}
       <h2 id="authPendingTitle">Acesso pendente</h2>
       <p id="authPendingText">Este acesso ainda precisa ser aprovado pelo administrador.</p>
       <span class="auth-device" id="authDeviceCode"></span>
-      <a class="auth-contact" id="authPendingWhatsapp" href="#" target="_blank" rel="noopener">💬 Solicitar aprovação pelo WhatsApp</a>
+      <div class="auth-guide">
+        <b>Último passo</b>
+        <span>Toque no botão abaixo e envie a mensagem pronta para o ADM. Assim ele saberá qual conta e qual dispositivo precisa aprovar.</span>
+      </div>
+      <a class="auth-contact" id="authPendingWhatsapp" href="#" target="_blank" rel="noopener">💬 Enviar mensagem para o ADM</a>
       <button class="auth-secondary" id="authPendingLogout">Sair desta conta</button>
     </div>
 
@@ -428,8 +454,21 @@ body.access-locked .firebase-gate{display:flex}
 
   <div class="card" id="adminSecurityCard" hidden>
     <div class="section-title"><h2>🛡 Painel do ADM</h2><button class="mini-link" id="refreshRequestsBtn">Atualizar</button></div>
-    <p style="font-size:11px;color:var(--muted);line-height:1.5">Aprove somente pessoas e aparelhos que você reconhece.</p>
-    <div id="pendingRequests"><div class="empty">Carregando solicitações...</div></div>
+    <p style="font-size:11px;color:var(--muted);line-height:1.5">Gerencie solicitações, usuários e dispositivos. Negar um acesso o mantém bloqueado até você liberar manualmente.</p>
+    <div class="admin-tabs">
+      <button class="admin-tab active" data-admin-tab="pending">Pendentes</button>
+      <button class="admin-tab" data-admin-tab="authorized">Autorizados</button>
+      <button class="admin-tab" data-admin-tab="blocked">Bloqueados</button>
+    </div>
+    <div class="admin-panel-view" id="adminPendingView">
+      <div id="pendingRequests"><div class="empty">Carregando solicitações...</div></div>
+    </div>
+    <div class="admin-panel-view" id="adminAuthorizedView" hidden>
+      <div id="authorizedUsers"><div class="empty">Carregando usuários...</div></div>
+    </div>
+    <div class="admin-panel-view" id="adminBlockedView" hidden>
+      <div id="blockedUsers"><div class="empty">Carregando bloqueios...</div></div>
+    </div>
   </div>
 
   <div class="card">
@@ -521,6 +560,14 @@ async function ensureAccessRequest(user,type){
   const api=centralFirebaseApi,deviceId=centralDeviceId();
   const requestId=`${user.uid}_${deviceId}`;
   const ref=api.doc(centralDb,"solicitacoes",requestId);
+
+  try{
+    const existing=await api.getDoc(ref);
+    if(existing.exists())return existing.data();
+  }catch(err){
+    console.warn("Não foi possível consultar solicitação existente:",err)
+  }
+
   const payload={
     uid:user.uid,
     email:user.email||"",
@@ -529,16 +576,8 @@ async function ensureAccessRequest(user,type){
     status:"pendente",
     criadoEm:api.serverTimestamp()
   };
-  try{
-    await api.setDoc(ref,payload);
-    return payload
-  }catch(err){
-    try{
-      const snap=await api.getDoc(ref);
-      if(snap.exists())return snap.data()
-    }catch{}
-    throw err
-  }
+  await api.setDoc(ref,payload);
+  return payload
 }
 async function evaluateCentralAccess(user){
   lockCentral();
@@ -558,9 +597,18 @@ async function evaluateCentralAccess(user){
     const userRef=api.doc(centralDb,"usuarios",user.uid);
     const userSnap=await api.getDoc(userRef);
 
+    if(userSnap.exists()&&userSnap.data().bloqueado===true){
+      showPending(user,"Conta bloqueada","Este usuário foi bloqueado pelo administrador. Entre em contato com o ADM caso queira solicitar uma nova análise.");
+      return
+    }
+
     if(!userSnap.exists()||userSnap.data().ativo!==true){
-      await ensureAccessRequest(user,"usuario");
-      showPending(user,"Conta aguardando aprovação","Sua conta foi criada, mas ainda não foi liberada pelo administrador.");
+      const req=await ensureAccessRequest(user,"usuario");
+      if(req?.status==="negado"){
+        showPending(user,"Solicitação negada","Seu pedido de acesso foi negado. Ele não será recriado automaticamente. Entre em contato com o ADM se precisar de uma nova análise.");
+      }else{
+        showPending(user,"Conta aguardando aprovação","Sua conta foi criada. Agora envie a mensagem para o ADM e aguarde a aprovação.");
+      }
       return
     }
 
@@ -577,9 +625,19 @@ async function evaluateCentralAccess(user){
 
     const deviceRef=api.doc(centralDb,"usuarios",user.uid,"dispositivos",centralDeviceId());
     const deviceSnap=await api.getDoc(deviceRef);
+
+    if(deviceSnap.exists()&&deviceSnap.data().bloqueado===true){
+      showPending(user,"Dispositivo bloqueado","Sua conta existe, mas este celular ou navegador foi bloqueado pelo administrador.");
+      return
+    }
+
     if(!deviceSnap.exists()||deviceSnap.data().ativo!==true){
-      await ensureAccessRequest(user,"dispositivo");
-      showPending(user,"Novo dispositivo detectado","Sua conta é válida, mas este celular/navegador ainda precisa ser aprovado pelo administrador.");
+      const req=await ensureAccessRequest(user,"dispositivo");
+      if(req?.status==="negado"){
+        showPending(user,"Dispositivo não autorizado","O acesso deste dispositivo foi negado e continuará bloqueado até o ADM liberá-lo.");
+      }else{
+        showPending(user,"Novo dispositivo detectado","Sua conta é válida, mas este celular/navegador ainda precisa ser aprovado. Envie a mensagem pronta para o ADM.");
+      }
       return
     }
 
@@ -603,7 +661,7 @@ function grantCentralAccess(user,data){
   $("securityRole").textContent=data?.admin===true?"Administrador":"Usuário";
   $("adminSecurityCard").hidden=data?.admin!==true;
   unlockCentral();
-  if(data?.admin===true)loadPendingRequests();
+  if(data?.admin===true)loadAdminData();
 }
 async function loginCentral(){
   const email=$("authEmail").value.trim(),password=$("authPassword").value;
@@ -618,7 +676,7 @@ async function loginCentral(){
 async function signupCentral(){
   const email=$("authEmail").value.trim(),password=$("authPassword").value;
   $("authError").textContent="";
-  if(!email||!password){$("authError").textContent="Informe e-mail e uma senha para criar a solicitação.";return}
+  if(!email||!password){$("authError").textContent="Digite seu e-mail e crie uma senha com pelo menos 6 caracteres.";return}
   try{
     $("authSignupBtn").disabled=true;
     await centralFirebaseApi.createUserWithEmailAndPassword(centralAuth,email,password)
@@ -654,46 +712,207 @@ async function loadPendingRequests(){
     box.innerHTML='<div class="empty">Não foi possível carregar as solicitações.</div>'
   }
 }
+
 function escapeHtml(v){
   return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))
 }
+
 async function approveRequest(id){
   const d=pendingRequestMap.get(id);if(!d)return;
   const api=centralFirebaseApi;
   try{
     await api.setDoc(api.doc(centralDb,"usuarios",d.uid),{
       ativo:true,
+      bloqueado:false,
       email:d.email||"",
       atualizadoEm:api.serverTimestamp()
     },{merge:true});
+
     await api.setDoc(api.doc(centralDb,"usuarios",d.uid,"dispositivos",d.deviceId),{
       ativo:true,
+      bloqueado:false,
       deviceId:d.deviceId,
       aprovadoEm:api.serverTimestamp(),
       aprovadoPor:centralCurrentUser.uid
     },{merge:true});
+
     await api.updateDoc(api.doc(centralDb,"solicitacoes",id),{
       status:"aprovado",
       resolvidoEm:api.serverTimestamp(),
       resolvidoPor:centralCurrentUser.uid
     });
+
     toast("Acesso aprovado.");
-    loadPendingRequests()
+    await loadAdminData()
   }catch(err){console.error(err);toast("Não foi possível aprovar.")}
 }
+
 async function denyRequest(id){
-  if(!confirm("Negar esta solicitação de acesso?"))return;
+  const d=pendingRequestMap.get(id);if(!d)return;
+  const alvo=d.tipo==="dispositivo"?"este dispositivo":"este usuário";
+  if(!confirm(`Negar e bloquear ${alvo}? Ele continuará bloqueado até você liberar manualmente.`))return;
   const api=centralFirebaseApi;
   try{
+    if(d.tipo==="dispositivo"){
+      await api.setDoc(api.doc(centralDb,"usuarios",d.uid,"dispositivos",d.deviceId),{
+        ativo:false,
+        bloqueado:true,
+        deviceId:d.deviceId,
+        bloqueadoEm:api.serverTimestamp(),
+        bloqueadoPor:centralCurrentUser.uid
+      },{merge:true});
+    }else{
+      await api.setDoc(api.doc(centralDb,"usuarios",d.uid),{
+        ativo:false,
+        bloqueado:true,
+        email:d.email||"",
+        bloqueadoEm:api.serverTimestamp(),
+        bloqueadoPor:centralCurrentUser.uid
+      },{merge:true});
+    }
+
     await api.updateDoc(api.doc(centralDb,"solicitacoes",id),{
       status:"negado",
       resolvidoEm:api.serverTimestamp(),
       resolvidoPor:centralCurrentUser.uid
     });
-    toast("Solicitação negada.");
-    loadPendingRequests()
+
+    toast("Acesso negado e bloqueado.");
+    await loadAdminData()
   }catch(err){console.error(err);toast("Não foi possível negar.")}
 }
+
+async function getAllUsersWithDevices(){
+  const api=centralFirebaseApi;
+  const usersSnap=await api.getDocs(api.collection(centralDb,"usuarios"));
+  const users=[];
+  for(const us of usersSnap.docs){
+    const data={id:us.id,...us.data(),devices:[]};
+    try{
+      const ds=await api.getDocs(api.collection(centralDb,"usuarios",us.id,"dispositivos"));
+      data.devices=ds.docs.map(x=>({id:x.id,...x.data()}))
+    }catch(err){console.warn("Dispositivos:",err)}
+    users.push(data)
+  }
+  return users
+}
+
+function renderAuthorizedUsers(users){
+  const box=$("authorizedUsers");
+  const allowed=users.filter(u=>u.ativo===true&&u.bloqueado!==true);
+  if(!allowed.length){box.innerHTML='<div class="empty">Nenhum usuário autorizado.</div>';return}
+  box.innerHTML=allowed.map(u=>{
+    const isSelf=u.id===centralCurrentUser?.uid;
+    const activeDevices=(u.devices||[]).filter(d=>d.ativo===true&&d.bloqueado!==true);
+    const devices=activeDevices.length?activeDevices.map(d=>`
+      <div class="device-row">
+        <small>📱 ${escapeHtml(d.deviceId||d.id)}</small>
+        ${isSelf?'':`<button class="admin-action block-btn" data-block-device="${escapeHtml(u.id)}" data-device-id="${escapeHtml(d.id)}">Bloquear dispositivo</button>`}
+      </div>`).join(""):'<small style="margin-top:8px">Nenhum dispositivo registrado.</small>';
+    return `<div class="user-admin-item">
+      <b>${escapeHtml(u.email||u.id)}</b>
+      <small>UID: ${escapeHtml(u.id)}</small>
+      ${isSelf?'<span class="admin-badge">Administrador</span>':''}
+      ${devices}
+      ${isSelf?'':`<button class="admin-action block-btn" data-block-user="${escapeHtml(u.id)}">Bloquear usuário</button>`}
+    </div>`
+  }).join("")
+}
+
+function renderBlockedUsers(users){
+  const box=$("blockedUsers");
+  const rows=[];
+  users.forEach(u=>{
+    if(u.bloqueado===true){
+      rows.push(`<div class="user-admin-item">
+        <b>${escapeHtml(u.email||u.id)}</b>
+        <small>Usuário bloqueado<br>UID: ${escapeHtml(u.id)}</small>
+        <button class="admin-action unblock-btn" data-unblock-user="${escapeHtml(u.id)}">Liberar usuário</button>
+      </div>`)
+    }
+    (u.devices||[]).filter(d=>d.bloqueado===true).forEach(d=>{
+      rows.push(`<div class="user-admin-item">
+        <b>${escapeHtml(u.email||u.id)}</b>
+        <small>Dispositivo bloqueado<br>${escapeHtml(d.deviceId||d.id)}</small>
+        <button class="admin-action unblock-btn" data-unblock-device="${escapeHtml(u.id)}" data-device-id="${escapeHtml(d.id)}">Liberar dispositivo</button>
+      </div>`)
+    })
+  });
+  box.innerHTML=rows.length?rows.join(""):'<div class="empty">Nenhum usuário ou dispositivo bloqueado.</div>'
+}
+
+async function loadUserManagement(){
+  if(!centralUserData?.admin)return;
+  try{
+    const users=await getAllUsersWithDevices();
+    renderAuthorizedUsers(users);
+    renderBlockedUsers(users)
+  }catch(err){
+    console.error(err);
+    $("authorizedUsers").innerHTML='<div class="empty">Não foi possível carregar usuários.</div>';
+    $("blockedUsers").innerHTML='<div class="empty">Não foi possível carregar bloqueios.</div>'
+  }
+}
+
+async function loadAdminData(){
+  if(!centralUserData?.admin)return;
+  await Promise.all([loadPendingRequests(),loadUserManagement()])
+}
+
+function switchAdminTab(name){
+  document.querySelectorAll("[data-admin-tab]").forEach(b=>b.classList.toggle("active",b.dataset.adminTab===name));
+  $("adminPendingView").hidden=name!=="pending";
+  $("adminAuthorizedView").hidden=name!=="authorized";
+  $("adminBlockedView").hidden=name!=="blocked"
+}
+
+async function blockUser(uid){
+  if(uid===centralCurrentUser?.uid)return toast("Você não pode bloquear sua própria conta de ADM.");
+  if(!confirm("Bloquear este usuário? Ele perderá o acesso até você liberar novamente."))return;
+  const api=centralFirebaseApi;
+  try{
+    await api.setDoc(api.doc(centralDb,"usuarios",uid),{
+      ativo:false,bloqueado:true,bloqueadoEm:api.serverTimestamp(),bloqueadoPor:centralCurrentUser.uid
+    },{merge:true});
+    toast("Usuário bloqueado.");
+    await loadAdminData()
+  }catch(err){console.error(err);toast("Não foi possível bloquear.")}
+}
+
+async function unblockUser(uid){
+  const api=centralFirebaseApi;
+  try{
+    await api.setDoc(api.doc(centralDb,"usuarios",uid),{
+      ativo:true,bloqueado:false,atualizadoEm:api.serverTimestamp()
+    },{merge:true});
+    toast("Usuário liberado.");
+    await loadAdminData()
+  }catch(err){console.error(err);toast("Não foi possível liberar.")}
+}
+
+async function blockDevice(uid,deviceId){
+  if(!confirm("Bloquear somente este dispositivo?"))return;
+  const api=centralFirebaseApi;
+  try{
+    await api.setDoc(api.doc(centralDb,"usuarios",uid,"dispositivos",deviceId),{
+      ativo:false,bloqueado:true,bloqueadoEm:api.serverTimestamp(),bloqueadoPor:centralCurrentUser.uid
+    },{merge:true});
+    toast("Dispositivo bloqueado.");
+    await loadAdminData()
+  }catch(err){console.error(err);toast("Não foi possível bloquear o dispositivo.")}
+}
+
+async function unblockDevice(uid,deviceId){
+  const api=centralFirebaseApi;
+  try{
+    await api.setDoc(api.doc(centralDb,"usuarios",uid,"dispositivos",deviceId),{
+      ativo:true,bloqueado:false,aprovadoEm:api.serverTimestamp(),aprovadoPor:centralCurrentUser.uid
+    },{merge:true});
+    toast("Dispositivo liberado.");
+    await loadAdminData()
+  }catch(err){console.error(err);toast("Não foi possível liberar o dispositivo.")}
+}
+
 async function initCentralAuth(){
   lockCentral();
   $("authWhatsapp").href=waLink("Olá! Gostaria de solicitar acesso à Central de Apps.");
@@ -730,7 +949,7 @@ async function initCentralAuth(){
     $("authPassword").addEventListener("keydown",e=>{if(e.key==="Enter")loginCentral()});
     $("authPendingLogout").onclick=()=>authM.signOut(centralAuth);
     $("firebaseLogoutBtn").onclick=()=>authM.signOut(centralAuth);
-    $("refreshRequestsBtn").onclick=loadPendingRequests;
+    $("refreshRequestsBtn").onclick=loadAdminData;
 
     authM.onAuthStateChanged(centralAuth,user=>evaluateCentralAccess(user))
   }catch(err){
@@ -854,8 +1073,13 @@ function filterCards(){
 }
 
 document.addEventListener("click",async e=>{
+  const adminTab=e.target.closest("[data-admin-tab]");if(adminTab){switchAdminTab(adminTab.dataset.adminTab);return}
   const approve=e.target.closest("[data-approve-request]");if(approve){await approveRequest(approve.dataset.approveRequest);return}
   const deny=e.target.closest("[data-deny-request]");if(deny){await denyRequest(deny.dataset.denyRequest);return}
+  const blockUserBtn=e.target.closest("[data-block-user]");if(blockUserBtn){await blockUser(blockUserBtn.dataset.blockUser);return}
+  const unblockUserBtn=e.target.closest("[data-unblock-user]");if(unblockUserBtn){await unblockUser(unblockUserBtn.dataset.unblockUser);return}
+  const blockDeviceBtn=e.target.closest("[data-block-device]");if(blockDeviceBtn){await blockDevice(blockDeviceBtn.dataset.blockDevice,blockDeviceBtn.dataset.deviceId);return}
+  const unblockDeviceBtn=e.target.closest("[data-unblock-device]");if(unblockDeviceBtn){await unblockDevice(unblockDeviceBtn.dataset.unblockDevice,unblockDeviceBtn.dataset.deviceId);return}
   const goBtn=e.target.closest("[data-go]");if(goBtn){go(goBtn.dataset.go);return}
   const fav=e.target.closest("[data-fav]");if(fav){
     const id=fav.dataset.fav;
@@ -932,7 +1156,7 @@ $("installBtn").onclick=async()=>{
 
 let reg=null;
 if("serviceWorker" in navigator){
-  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=24",{updateViaCache:"none"})}catch{}})
+  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=25",{updateViaCache:"none"})}catch{}})
 }
 $("checkUpdateBtn").onclick=async()=>{if(!reg)return toast("Service worker ainda não está pronto.");try{await reg.update();toast("Verificação concluída.")}catch{toast("Não foi possível verificar.")}};
 
