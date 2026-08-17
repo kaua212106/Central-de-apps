@@ -60,33 +60,67 @@ body.dark{--text:#eef2ff;--muted:#a4aec2;--surface:rgba(18,24,38,.96);--soft:#15
 body.list-mode .apps-grid{grid-template-columns:1fr}body.compact .app-card p{display:none}
 @media(max-width:370px){.apps-grid{grid-template-columns:1fr}.mini-apps{grid-template-columns:repeat(2,1fr)}}
 
-.auth-gate{position:fixed;inset:0;z-index:10000;display:none;align-items:center;justify-content:center;padding:18px;background:linear-gradient(145deg,#667eea,#764ba2)}
+.firebase-gate{position:fixed;inset:0;z-index:10000;display:none;align-items:center;justify-content:center;padding:18px;background:linear-gradient(145deg,#667eea,#764ba2)}
 body.access-locked{overflow:hidden}
-body.access-locked .auth-gate{display:flex}
-.auth-box{width:min(430px,100%);background:#fff;border-radius:28px;padding:24px 20px;box-shadow:0 28px 80px rgba(18,25,48,.30);text-align:center}
+body.access-locked .firebase-gate{display:flex}
+.auth-box{width:min(440px,100%);max-height:calc(100dvh - 28px);overflow:auto;background:#fff;border-radius:28px;padding:24px 20px;box-shadow:0 28px 80px rgba(18,25,48,.30);text-align:center}
 .auth-logo{width:68px;height:68px;margin:0 auto 14px;border-radius:22px;display:grid;place-items:center;font-size:31px;background:linear-gradient(135deg,rgba(102,116,232,.14),rgba(118,75,162,.16));color:#5363dc}
 .auth-box h2{font-size:22px;color:#20283a;margin-bottom:7px}
-.auth-box p{font-size:12px;line-height:1.55;color:#687187;margin-bottom:16px}
-.auth-field{width:100%;min-height:52px;border:1px solid #e1e5ed;border-radius:15px;padding:13px 14px;background:#f7f8fc;color:#20283a;font-size:14px}
+.auth-box p{font-size:12px;line-height:1.55;color:#687187;margin-bottom:14px}
+.auth-field{width:100%;min-height:52px;border:1px solid #e1e5ed;border-radius:15px;padding:13px 14px;background:#f7f8fc;color:#20283a;font-size:14px;margin-top:8px}
 .auth-error{min-height:18px;margin:8px 0 0;color:#d14343;font-size:11px;font-weight:700}
-.auth-enter{width:100%;min-height:50px;border-radius:14px;margin-top:8px;background:linear-gradient(135deg,#667eea,#5363dc);color:#fff;font-size:13px;font-weight:850}
+.auth-enter,.auth-secondary{width:100%;min-height:50px;border-radius:14px;margin-top:9px;font-size:13px;font-weight:850}
+.auth-enter{background:linear-gradient(135deg,#667eea,#5363dc);color:#fff}
+.auth-secondary{background:#f1f3f7;color:#465066;border:1px solid #e4e7ee}
 .auth-contact{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:48px;border-radius:14px;margin-top:10px;background:#eafaf1;color:#087443;border:1px solid #d2f2df;font-size:12px;font-weight:850;text-decoration:none}
 .auth-note{font-size:10px!important;margin:13px 4px 0!important;color:#8a91a1!important}
+.auth-device{display:block;margin:10px auto 12px;padding:10px;border-radius:12px;background:#f3f5fa;color:#465066;font-size:11px;word-break:break-all}
+.auth-status{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border-radius:999px;background:#fff4db;color:#a16207;font-size:10px;font-weight:850;margin-bottom:11px}
+.security-info{padding:11px 0;border-bottom:1px solid #edf0f5}
+.security-info b{display:block;font-size:12px}
+.security-info small{display:block;margin-top:3px;color:var(--muted);font-size:10px;word-break:break-all}
+.pending-item{padding:12px;border:1px solid #e7eaf1;border-radius:14px;background:var(--soft);margin-top:8px}
+.pending-item b{display:block;font-size:12px}
+.pending-item small{display:block;color:var(--muted);font-size:9px;line-height:1.45;margin-top:3px;word-break:break-all}
+.pending-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}
+.pending-actions button{min-height:38px;border-radius:11px;font-size:10px;font-weight:850}
+.approve-btn{background:#e8f5ef;color:#087443}
+.deny-btn{background:#fff1f2;color:#c83a47}
 
 </style>
 </head>
 <body class="access-locked">
 
-<div class="auth-gate" id="authGate">
+<div class="firebase-gate" id="firebaseGate">
   <div class="auth-box">
-    <div class="auth-logo">🔒</div>
-    <h2>Acesso protegido</h2>
-    <p>Digite a senha fornecida pelo administrador para acessar a Central de Apps.</p>
-    <input class="auth-field" id="accessPassword" type="password" placeholder="Senha de acesso" autocomplete="current-password">
-    <div class="auth-error" id="accessError"></div>
-    <button class="auth-enter" id="accessEnterBtn">Entrar</button>
-    <a class="auth-contact" href="https://wa.me/5517992250453?text=Ol%C3%A1%21%20Estou%20tentando%20acessar%20a%20Central%20de%20Apps%20e%20gostaria%20de%20solicitar%20a%20senha%20de%20acesso." target="_blank" rel="noopener">💬 Falar com o ADM pelo WhatsApp</a>
-    <p class="auth-note">Depois que este aparelho for autorizado, a senha não será solicitada novamente neste navegador.</p>
+    <div class="auth-logo">🔐</div>
+
+    <div id="authLoginView">
+      <h2>Central Privada</h2>
+      <p>Entre com sua conta autorizada. Um novo dispositivo precisa ser aprovado pelo administrador.</p>
+      <input class="auth-field" id="authEmail" type="email" placeholder="E-mail" autocomplete="email">
+      <input class="auth-field" id="authPassword" type="password" placeholder="Senha" autocomplete="current-password">
+      <div class="auth-error" id="authError"></div>
+      <button class="auth-enter" id="authLoginBtn">Entrar</button>
+      <button class="auth-secondary" id="authSignupBtn">Primeiro acesso / criar solicitação</button>
+      <a class="auth-contact" id="authWhatsapp" href="https://wa.me/5517992250453" target="_blank" rel="noopener">💬 Falar com o ADM pelo WhatsApp</a>
+      <p class="auth-note">Criar uma conta não libera a Central automaticamente. O administrador precisa aprovar o usuário e o dispositivo.</p>
+    </div>
+
+    <div id="authPendingView" hidden>
+      <div class="auth-status">⏳ Aguardando aprovação</div>
+      <h2 id="authPendingTitle">Acesso pendente</h2>
+      <p id="authPendingText">Este acesso ainda precisa ser aprovado pelo administrador.</p>
+      <span class="auth-device" id="authDeviceCode"></span>
+      <a class="auth-contact" id="authPendingWhatsapp" href="#" target="_blank" rel="noopener">💬 Solicitar aprovação pelo WhatsApp</a>
+      <button class="auth-secondary" id="authPendingLogout">Sair desta conta</button>
+    </div>
+
+    <div id="authConfigView" hidden>
+      <h2>Firebase não configurado</h2>
+      <p>Preencha o arquivo <b>firebase-config.js</b> com a configuração Web do seu projeto Firebase antes de publicar.</p>
+      <a class="auth-contact" href="https://wa.me/5517992250453" target="_blank" rel="noopener">💬 Falar com o ADM</a>
+    </div>
   </div>
 </div>
 
@@ -385,11 +419,17 @@ body.access-locked .auth-gate{display:flex}
     <div class="setting-row"><div><b>Modo lista</b><small>Um aplicativo por linha.</small></div><button class="switch" id="listSwitch"><i></i></button></div>
     <div class="setting-row"><div><b>Cards compactos</b><small>Esconde a descrição.</small></div><button class="switch" id="compactSwitch"><i></i></button></div>
   </div>
+  <div class="card" id="firebaseSecurityCard" hidden>
+    <div class="section-title"><h2>🔐 Conta e segurança</h2><span class="tag" id="securityRole">Usuário</span></div>
+    <div class="security-info"><b>Conta conectada</b><small id="securityEmail">—</small></div>
+    <div class="security-info"><b>Código deste dispositivo</b><small id="securityDevice">—</small></div>
+    <button class="btn btn-neutral" id="firebaseLogoutBtn">Sair da conta</button>
+  </div>
 
-  <div class="card">
-    <div class="section-title"><h2>🔐 Segurança</h2></div>
-    <p style="font-size:11px;color:var(--muted);line-height:1.5">Este aparelho está autorizado a abrir a Central sem pedir a senha novamente.</p>
-    <button class="btn btn-red" id="revokeAccessBtn">Remover autorização deste aparelho</button>
+  <div class="card" id="adminSecurityCard" hidden>
+    <div class="section-title"><h2>🛡 Painel do ADM</h2><button class="mini-link" id="refreshRequestsBtn">Atualizar</button></div>
+    <p style="font-size:11px;color:var(--muted);line-height:1.5">Aprove somente pessoas e aparelhos que você reconhece.</p>
+    <div id="pendingRequests"><div class="empty">Carregando solicitações...</div></div>
   </div>
 
   <div class="card">
@@ -422,61 +462,285 @@ body.access-locked .auth-gate{display:flex}
 </div></div>
 <div class="toast" id="toast"></div>
 
+<script src="firebase-config.js"></script>
 <script>
-
-const ACCESS_STORAGE="central-access-authorized-v1";
-const ACCESS_HASH="618e86a89cdda72a7b5cb7a3430c6cc8a0d4457426aac1fad2eed8f04b93d88b";
-
-async function hashAccessPassword(value){
-  const data=new TextEncoder().encode(value);
-  const hash=await crypto.subtle.digest("SHA-256",data);
-  return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,"0")).join("");
-}
-
-function unlockCentral(){
-  document.body.classList.remove("access-locked");
-  const input=document.getElementById("accessPassword");
-  if(input)input.value="";
-}
-
-function lockCentral(){
-  document.body.classList.add("access-locked");
-  setTimeout(()=>document.getElementById("accessPassword")?.focus(),80);
-}
-
-try{
-  if(localStorage.getItem(ACCESS_STORAGE)==="1")unlockCentral();
-  else lockCentral();
-}catch{lockCentral();}
-
-document.getElementById("accessEnterBtn").onclick=async()=>{
-  const input=document.getElementById("accessPassword");
-  const error=document.getElementById("accessError");
-  const value=input.value;
-  if(!value){
-    error.textContent="Digite a senha de acesso.";
-    input.focus();
-    return;
-  }
-  if(await hashAccessPassword(value)===ACCESS_HASH){
-    try{localStorage.setItem(ACCESS_STORAGE,"1")}catch{}
-    error.textContent="";
-    unlockCentral();
-  }else{
-    error.textContent="Senha incorreta. Solicite a senha ao administrador.";
-    input.select();
-  }
-};
-
-document.getElementById("accessPassword").addEventListener("keydown",e=>{
-  if(e.key==="Enter")document.getElementById("accessEnterBtn").click();
-});
-
 const APPS=[{"id": "walkie", "name": "Walkie", "desc": "Aplicativo de comunicação e conversas.", "icon": "💬", "category": "Comunicação", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Walkie/", "color": "#667eea", "favorite": false}, {"id": "calorias", "name": "Minhas Calorias", "desc": "Controle de alimentação, calorias, água e progresso.", "icon": "🍎", "category": "Saúde", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Contagem-de-calorias-/", "color": "#10b981", "favorite": false}, {"id": "devkit", "name": "DevKit", "desc": "Kit do desenvolvedor para criar, revisar e organizar PWAs.", "icon": "</>", "category": "Desenvolvimento", "folder": "Desenvolvimento", "status": "Estável", "url": "https://kaua212106.github.io/Central-de-html/", "color": "#3b82f6", "favorite": false}, {"id": "cofre", "name": "Meu Cofre", "desc": "Cofre pessoal para documentos, arquivos e informações.", "icon": "🔐", "category": "Utilidades", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Cofre-de-documentos/", "color": "#764ba2", "favorite": false}, {"id": "ritmo", "name": "Ritmo", "desc": "Hábitos, metas e acompanhamento do progresso pessoal.", "icon": "◎", "category": "Hábitos", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Ritmo/", "color": "#2ca574", "favorite": false}, {"id": "conhecimento", "name": "Meu Conhecimento", "desc": "Segundo cérebro pessoal para estudo e organização.", "icon": "🧠", "category": "Estudos", "folder": "Estudos", "status": "Estável", "url": "https://kaua212106.github.io/Meus-conhecimentos/", "color": "#8956ed", "favorite": false}, {"id": "financas", "name": "Minhas Finanças", "desc": "Controle financeiro, metas, carteira e investimentos.", "icon": "R$", "category": "Finanças", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Organiza-o-financeira/", "color": "#10b981", "favorite": false}, {"id": "agenda", "name": "Agenda de Tarefas", "desc": "Tarefas, calendário, horários e Pomodoro.", "icon": "✓", "category": "Produtividade", "folder": "Organização", "status": "Estável", "url": "https://kaua212106.github.io/Agenda-de-tarefas/", "color": "#f59e0b", "favorite": false}, {"id": "links", "name": "Central de Links", "desc": "Organize, pesquise e acesse seus links favoritos em um só lugar.", "icon": "🔗", "category": "Utilidades", "folder": "Organização", "status": "Estável", "url": "https://kaua212106.github.io/Central-de-links/", "color": "#3b82f6", "favorite": false}, {"id": "informacoes", "name": "Lista de Informações", "desc": "Organize e consulte informações importantes em um só lugar.", "icon": "🗂️", "category": "Utilidades", "folder": "Organização", "status": "Estável", "url": "https://kaua212106.github.io/Lista-de-informa-es-/", "color": "#6366f1", "favorite": false}, {"id": "filmes", "name": "Lista de Filmes", "desc": "Organize filmes, acompanhe o que já assistiu e o que quer ver.", "icon": "🎬", "category": "Entretenimento", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Lista-de-filmes/", "color": "#ef4444", "favorite": false}, {"id": "biblioteca", "name": "Biblioteca", "desc": "Biblioteca pessoal para organizar livros, PDFs, arquivos e leituras.", "icon": "📚", "category": "Estudos", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Biblioteca/", "color": "#8b5cf6", "favorite": false}, {"id": "receitas", "name": "Livro de Receitas", "desc": "Organize e consulte suas receitas favoritas em um só lugar.", "icon": "🍳", "category": "Receitas", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Livro-de-receitas/", "color": "#f97316", "favorite": false}];
 const STORAGE="central-publica-v10";
 const $=id=>document.getElementById(id);
 let prefs={favorites:null,recent:[],hidden:[],dark:false,list:false,compact:false};
 let deferredInstall=null;
+
+const FIREBASE_SDK_VERSION="12.17.1";
+const CENTRAL_DEVICE_KEY="central-device-id-v1";
+const CENTRAL_WHATSAPP="5517992250453";
+let centralAuth=null,centralDb=null,centralFirebaseApi=null,centralCurrentUser=null,centralUserData=null;
+let pendingRequestMap=new Map();
+
+function centralDeviceId(){
+  let id="";
+  try{id=localStorage.getItem(CENTRAL_DEVICE_KEY)||""}catch{}
+  if(!id){
+    id=(crypto.randomUUID?.()||("dev-"+Date.now()+"-"+Math.random().toString(36).slice(2))).replace(/[^a-zA-Z0-9_-]/g,"");
+    try{localStorage.setItem(CENTRAL_DEVICE_KEY,id)}catch{}
+  }
+  return id
+}
+
+function setAuthView(name){
+  const ids=["authLoginView","authPendingView","authConfigView"];
+  ids.forEach(id=>$(id).hidden=id!==name);
+}
+function lockCentral(){document.body.classList.add("access-locked")}
+function unlockCentral(){document.body.classList.remove("access-locked")}
+function waLink(message){return `https://wa.me/${CENTRAL_WHATSAPP}?text=${encodeURIComponent(message)}`}
+function firebaseConfigured(){
+  const c=window.CENTRAL_FIREBASE_CONFIG;
+  return !!(c&&c.apiKey&&c.authDomain&&c.projectId&&c.appId&&!String(c.apiKey).includes("COLE_")&&!String(c.projectId).includes("COLE_"));
+}
+function authMessage(err){
+  const code=err?.code||"";
+  if(code.includes("invalid-credential")||code.includes("wrong-password")||code.includes("user-not-found"))return "E-mail ou senha incorretos.";
+  if(code.includes("invalid-email"))return "Digite um e-mail válido.";
+  if(code.includes("email-already-in-use"))return "Este e-mail já possui uma conta. Use Entrar.";
+  if(code.includes("weak-password"))return "Use uma senha com pelo menos 6 caracteres.";
+  if(code.includes("too-many-requests"))return "Muitas tentativas. Tente novamente mais tarde.";
+  if(code.includes("network-request-failed"))return "Sem conexão com o Firebase.";
+  return "Não foi possível concluir. Verifique os dados e tente novamente.";
+}
+function showPending(user,title,text){
+  lockCentral();
+  setAuthView("authPendingView");
+  $("authPendingTitle").textContent=title;
+  $("authPendingText").textContent=text;
+  const device=centralDeviceId();
+  $("authDeviceCode").textContent=`Dispositivo: ${device}`;
+  const msg=`Olá! Gostaria de solicitar acesso à Central de Apps.%0A%0AConta: ${user?.email||"sem e-mail"}%0ADispositivo: ${device}`;
+  $("authPendingWhatsapp").href=waLink(decodeURIComponent(msg.replaceAll("%0A","\n")));
+}
+async function ensureAccessRequest(user,type){
+  const api=centralFirebaseApi,deviceId=centralDeviceId();
+  const requestId=`${user.uid}_${deviceId}`;
+  const ref=api.doc(centralDb,"solicitacoes",requestId);
+  const payload={
+    uid:user.uid,
+    email:user.email||"",
+    deviceId,
+    tipo:type,
+    status:"pendente",
+    criadoEm:api.serverTimestamp()
+  };
+  try{
+    await api.setDoc(ref,payload);
+    return payload
+  }catch(err){
+    try{
+      const snap=await api.getDoc(ref);
+      if(snap.exists())return snap.data()
+    }catch{}
+    throw err
+  }
+}
+async function evaluateCentralAccess(user){
+  lockCentral();
+  centralCurrentUser=user||null;
+  centralUserData=null;
+  $("firebaseSecurityCard").hidden=true;
+  $("adminSecurityCard").hidden=true;
+
+  if(!user){
+    setAuthView("authLoginView");
+    $("authError").textContent="";
+    return
+  }
+
+  const api=centralFirebaseApi;
+  try{
+    const userRef=api.doc(centralDb,"usuarios",user.uid);
+    const userSnap=await api.getDoc(userRef);
+
+    if(!userSnap.exists()||userSnap.data().ativo!==true){
+      await ensureAccessRequest(user,"usuario");
+      showPending(user,"Conta aguardando aprovação","Sua conta foi criada, mas ainda não foi liberada pelo administrador.");
+      return
+    }
+
+    const data=userSnap.data();
+    centralUserData=data;
+
+    const tokenResult=await user.getIdTokenResult(true);
+    const isAdmin=tokenResult.claims?.admin===true;
+
+    if(isAdmin){
+      grantCentralAccess(user,{...data,admin:true});
+      return
+    }
+
+    const deviceRef=api.doc(centralDb,"usuarios",user.uid,"dispositivos",centralDeviceId());
+    const deviceSnap=await api.getDoc(deviceRef);
+    if(!deviceSnap.exists()||deviceSnap.data().ativo!==true){
+      await ensureAccessRequest(user,"dispositivo");
+      showPending(user,"Novo dispositivo detectado","Sua conta é válida, mas este celular/navegador ainda precisa ser aprovado pelo administrador.");
+      return
+    }
+
+    grantCentralAccess(user,data)
+  }catch(err){
+    console.error("Verificação de acesso:",err);
+    lockCentral();
+    setAuthView("authPendingView");
+    $("authPendingTitle").textContent="Não foi possível verificar o acesso";
+    $("authPendingText").textContent="A Central permanece bloqueada até conseguir confirmar sua autorização no Firebase.";
+    $("authDeviceCode").textContent=`Dispositivo: ${centralDeviceId()}`;
+    $("authPendingWhatsapp").href=waLink(`Olá! Não consegui validar meu acesso à Central de Apps.\nConta: ${user.email||""}\nDispositivo: ${centralDeviceId()}`);
+  }
+}
+function grantCentralAccess(user,data){
+  centralCurrentUser=user;
+  centralUserData=data||{};
+  $("firebaseSecurityCard").hidden=false;
+  $("securityEmail").textContent=user.email||"—";
+  $("securityDevice").textContent=centralDeviceId();
+  $("securityRole").textContent=data?.admin===true?"Administrador":"Usuário";
+  $("adminSecurityCard").hidden=data?.admin!==true;
+  unlockCentral();
+  if(data?.admin===true)loadPendingRequests();
+}
+async function loginCentral(){
+  const email=$("authEmail").value.trim(),password=$("authPassword").value;
+  $("authError").textContent="";
+  if(!email||!password){$("authError").textContent="Preencha e-mail e senha.";return}
+  try{
+    $("authLoginBtn").disabled=true;
+    await centralFirebaseApi.signInWithEmailAndPassword(centralAuth,email,password)
+  }catch(err){$("authError").textContent=authMessage(err)}
+  finally{$("authLoginBtn").disabled=false}
+}
+async function signupCentral(){
+  const email=$("authEmail").value.trim(),password=$("authPassword").value;
+  $("authError").textContent="";
+  if(!email||!password){$("authError").textContent="Informe e-mail e uma senha para criar a solicitação.";return}
+  try{
+    $("authSignupBtn").disabled=true;
+    await centralFirebaseApi.createUserWithEmailAndPassword(centralAuth,email,password)
+  }catch(err){$("authError").textContent=authMessage(err)}
+  finally{$("authSignupBtn").disabled=false}
+}
+async function loadPendingRequests(){
+  if(!centralUserData?.admin)return;
+  const box=$("pendingRequests");
+  box.innerHTML='<div class="empty">Carregando solicitações...</div>';
+  try{
+    const api=centralFirebaseApi;
+    const q=api.query(api.collection(centralDb,"solicitacoes"),api.where("status","==","pendente"));
+    const snap=await api.getDocs(q);
+    pendingRequestMap=new Map();
+    if(snap.empty){box.innerHTML='<div class="empty">Nenhuma solicitação pendente.</div>';return}
+    box.innerHTML="";
+    snap.forEach(docSnap=>{
+      const d=docSnap.data();
+      pendingRequestMap.set(docSnap.id,d);
+      const item=document.createElement("div");
+      item.className="pending-item";
+      item.innerHTML=`<b>${escapeHtml(d.email||"Conta sem e-mail")}</b>
+        <small>${d.tipo==="dispositivo"?"Novo dispositivo":"Novo usuário"}<br>${escapeHtml(d.deviceId||"")}</small>
+        <div class="pending-actions">
+          <button class="approve-btn" data-approve-request="${docSnap.id}">✓ Aprovar</button>
+          <button class="deny-btn" data-deny-request="${docSnap.id}">✕ Negar</button>
+        </div>`;
+      box.appendChild(item)
+    })
+  }catch(err){
+    console.error(err);
+    box.innerHTML='<div class="empty">Não foi possível carregar as solicitações.</div>'
+  }
+}
+function escapeHtml(v){
+  return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))
+}
+async function approveRequest(id){
+  const d=pendingRequestMap.get(id);if(!d)return;
+  const api=centralFirebaseApi;
+  try{
+    await api.setDoc(api.doc(centralDb,"usuarios",d.uid),{
+      ativo:true,
+      email:d.email||"",
+      atualizadoEm:api.serverTimestamp()
+    },{merge:true});
+    await api.setDoc(api.doc(centralDb,"usuarios",d.uid,"dispositivos",d.deviceId),{
+      ativo:true,
+      deviceId:d.deviceId,
+      aprovadoEm:api.serverTimestamp(),
+      aprovadoPor:centralCurrentUser.uid
+    },{merge:true});
+    await api.updateDoc(api.doc(centralDb,"solicitacoes",id),{
+      status:"aprovado",
+      resolvidoEm:api.serverTimestamp(),
+      resolvidoPor:centralCurrentUser.uid
+    });
+    toast("Acesso aprovado.");
+    loadPendingRequests()
+  }catch(err){console.error(err);toast("Não foi possível aprovar.")}
+}
+async function denyRequest(id){
+  if(!confirm("Negar esta solicitação de acesso?"))return;
+  const api=centralFirebaseApi;
+  try{
+    await api.updateDoc(api.doc(centralDb,"solicitacoes",id),{
+      status:"negado",
+      resolvidoEm:api.serverTimestamp(),
+      resolvidoPor:centralCurrentUser.uid
+    });
+    toast("Solicitação negada.");
+    loadPendingRequests()
+  }catch(err){console.error(err);toast("Não foi possível negar.")}
+}
+async function initCentralAuth(){
+  lockCentral();
+  $("authWhatsapp").href=waLink("Olá! Gostaria de solicitar acesso à Central de Apps.");
+  if(!firebaseConfigured()){
+    setAuthView("authConfigView");
+    return
+  }
+  try{
+    const v=FIREBASE_SDK_VERSION;
+    const [appM,authM,fsM]=await Promise.all([
+      import(`https://www.gstatic.com/firebasejs/${v}/firebase-app.js`),
+      import(`https://www.gstatic.com/firebasejs/${v}/firebase-auth.js`),
+      import(`https://www.gstatic.com/firebasejs/${v}/firebase-firestore.js`)
+    ]);
+    const app=appM.initializeApp(window.CENTRAL_FIREBASE_CONFIG);
+    centralAuth=authM.getAuth(app);
+    centralDb=fsM.getFirestore(app);
+    centralFirebaseApi={...authM,...fsM};
+
+    if(window.CENTRAL_APP_CHECK_SITE_KEY){
+      try{
+        const ac=await import(`https://www.gstatic.com/firebasejs/${v}/firebase-app-check.js`);
+        ac.initializeAppCheck(app,{
+          provider:new ac.ReCaptchaEnterpriseProvider(window.CENTRAL_APP_CHECK_SITE_KEY),
+          isTokenAutoRefreshEnabled:true
+        })
+      }catch(err){console.warn("App Check não iniciado:",err)}
+    }
+
+    await authM.setPersistence(centralAuth,authM.browserLocalPersistence);
+
+    $("authLoginBtn").onclick=loginCentral;
+    $("authSignupBtn").onclick=signupCentral;
+    $("authPassword").addEventListener("keydown",e=>{if(e.key==="Enter")loginCentral()});
+    $("authPendingLogout").onclick=()=>authM.signOut(centralAuth);
+    $("firebaseLogoutBtn").onclick=()=>authM.signOut(centralAuth);
+    $("refreshRequestsBtn").onclick=loadPendingRequests;
+
+    authM.onAuthStateChanged(centralAuth,user=>evaluateCentralAccess(user))
+  }catch(err){
+    console.error("Firebase:",err);
+    setAuthView("authConfigView");
+    $("authConfigView").querySelector("p").innerHTML="Não foi possível iniciar o Firebase. Confira <b>firebase-config.js</b>, Authentication, Firestore e as regras de segurança."
+  }
+}
+
+
 
 try{
   const saved=JSON.parse(localStorage.getItem(STORAGE)||"null");
@@ -590,6 +854,8 @@ function filterCards(){
 }
 
 document.addEventListener("click",async e=>{
+  const approve=e.target.closest("[data-approve-request]");if(approve){await approveRequest(approve.dataset.approveRequest);return}
+  const deny=e.target.closest("[data-deny-request]");if(deny){await denyRequest(deny.dataset.denyRequest);return}
   const goBtn=e.target.closest("[data-go]");if(goBtn){go(goBtn.dataset.go);return}
   const fav=e.target.closest("[data-fav]");if(fav){
     const id=fav.dataset.fav;
@@ -634,13 +900,6 @@ $("listSwitch").onclick=()=>{prefs.list=!prefs.list;save();applyPrefs()};
 $("compactSwitch").onclick=()=>{prefs.compact=!prefs.compact;save();applyPrefs()};
 $("deletePrefsBtn").onclick=deletePreferences;
 
-$("revokeAccessBtn").onclick=()=>{
-  if(!confirm("Remover a autorização deste aparelho? A senha será solicitada novamente."))return;
-  try{localStorage.removeItem(ACCESS_STORAGE)}catch{}
-  lockCentral();
-};
-
-
 
 function deletePreferences(){
   if(!confirm("Excluir todas as preferências salvas neste aparelho?"))return;
@@ -673,11 +932,12 @@ $("installBtn").onclick=async()=>{
 
 let reg=null;
 if("serviceWorker" in navigator){
-  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=22",{updateViaCache:"none"})}catch{}})
+  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=24",{updateViaCache:"none"})}catch{}})
 }
 $("checkUpdateBtn").onclick=async()=>{if(!reg)return toast("Service worker ainda não está pronto.");try{await reg.update();toast("Verificação concluída.")}catch{toast("Não foi possível verificar.")}};
 
 applyPrefs();syncFavoriteButtons();renderFavorites();renderAllApps();renderRecent();filterCards();syncHideButtons();
+initCentralAuth();
 </script>
 </body>
 </html>
