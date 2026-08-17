@@ -353,7 +353,7 @@ body.access-verifying .copy-btn{opacity:.62}
   <div id="homeAdminSlot"></div>
 
   <div class="dashboard">
-    <div class="dash"><b id="totalCount">13</b><small>Apps</small></div>
+    <div class="dash"><b id="totalCount">14</b><small>Apps</small></div>
     <div class="dash"><b id="favoriteCount">0</b><small>Favoritos</small></div>
   </div>
 
@@ -615,6 +615,25 @@ body.access-verifying .copy-btn{opacity:.62}
     <button class="hide-btn" data-hide-app="receitas" aria-label="Ocultar da tela inicial">👁</button>
   </div>
 </article>
+
+<article class="app-card" data-id="curso-adm" data-name="curso de adm" data-category="Estudos" data-folder="Estudos" data-status="Estável" style="--app-color:#2563eb">
+  <div class="app-head">
+    <div class="app-icon">🎓</div>
+    <button class="fav-btn" data-fav="curso-adm" aria-label="Favoritar">☆</button>
+  </div>
+  <h3>Curso de ADM</h3>
+  <p>Curso de Administração com conteúdos e materiais para aprender e revisar.</p>
+  <div class="tags">
+    <span class="tag">Estudos</span>
+    <span class="tag">Estudos</span>
+    <span class="tag status-estavel">Estável</span>
+  </div>
+  <div class="app-actions">
+    <a class="open-btn" data-open="curso-adm" href="https://kaua212106.github.io/Curso-ADM-/">Abrir</a>
+    <button class="copy-btn" data-copy="https://kaua212106.github.io/Curso-ADM-/" aria-label="Copiar link">⧉</button>
+    <button class="hide-btn" data-hide-app="curso-adm" aria-label="Ocultar da tela inicial">👁</button>
+  </div>
+</article>
 </div>
   <div class="empty" id="noResults" hidden>Nenhum aplicativo encontrado.</div>
 
@@ -635,7 +654,7 @@ body.access-verifying .copy-btn{opacity:.62}
 </section>
 
 <section class="page" id="appsPage">
-  <div class="hero"><h2>Todos os apps</h2><p>Os 13 aplicativos disponíveis nesta Central.</p></div>
+  <div class="hero"><h2>Todos os apps</h2><p>Os 14 aplicativos disponíveis nesta Central.</p></div>
   <div class="apps-grid" id="allAppsGrid"></div>
 
   <div class="creator-footer-card">
@@ -732,7 +751,7 @@ body.access-verifying .copy-btn{opacity:.62}
 
 <script src="firebase-config.js"></script>
 <script>
-const APPS=[{"id": "walkie", "name": "Walkie", "desc": "Aplicativo de comunicação e conversas.", "icon": "💬", "category": "Comunicação", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Walkie/", "color": "#667eea", "favorite": false}, {"id": "calorias", "name": "Minhas Calorias", "desc": "Controle de alimentação, calorias, água e progresso.", "icon": "🍎", "category": "Saúde", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Contagem-de-calorias-/", "color": "#10b981", "favorite": false}, {"id": "devkit", "name": "DevKit", "desc": "Kit do desenvolvedor para criar, revisar e organizar PWAs.", "icon": "</>", "category": "Desenvolvimento", "folder": "Desenvolvimento", "status": "Estável", "url": "https://kaua212106.github.io/Central-de-html/", "color": "#3b82f6", "favorite": false}, {"id": "cofre", "name": "Meu Cofre", "desc": "Cofre pessoal para documentos, arquivos e informações.", "icon": "🔐", "category": "Utilidades", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Cofre-de-documentos/", "color": "#764ba2", "favorite": false}, {"id": "ritmo", "name": "Ritmo", "desc": "Hábitos, metas e acompanhamento do progresso pessoal.", "icon": "◎", "category": "Hábitos", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Ritmo/", "color": "#2ca574", "favorite": false}, {"id": "conhecimento", "name": "Meu Conhecimento", "desc": "Segundo cérebro pessoal para estudo e organização.", "icon": "🧠", "category": "Estudos", "folder": "Estudos", "status": "Estável", "url": "https://kaua212106.github.io/Meus-conhecimentos/", "color": "#8956ed", "favorite": false}, {"id": "financas", "name": "Minhas Finanças", "desc": "Controle financeiro, metas, carteira e investimentos.", "icon": "R$", "category": "Finanças", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Organiza-o-financeira/", "color": "#10b981", "favorite": false}, {"id": "agenda", "name": "Agenda de Tarefas", "desc": "Tarefas, calendário, horários e Pomodoro.", "icon": "✓", "category": "Produtividade", "folder": "Organização", "status": "Estável", "url": "https://kaua212106.github.io/Agenda-de-tarefas/", "color": "#f59e0b", "favorite": false}, {"id": "links", "name": "Central de Links", "desc": "Organize, pesquise e acesse seus links favoritos em um só lugar.", "icon": "🔗", "category": "Utilidades", "folder": "Organização", "status": "Estável", "url": "https://kaua212106.github.io/Central-de-links/", "color": "#3b82f6", "favorite": false}, {"id": "informacoes", "name": "Lista de Informações", "desc": "Organize e consulte informações importantes em um só lugar.", "icon": "🗂️", "category": "Utilidades", "folder": "Organização", "status": "Estável", "url": "https://kaua212106.github.io/Lista-de-informa-es-/", "color": "#6366f1", "favorite": false}, {"id": "filmes", "name": "Lista de Filmes", "desc": "Organize filmes, acompanhe o que já assistiu e o que quer ver.", "icon": "🎬", "category": "Entretenimento", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Lista-de-filmes/", "color": "#ef4444", "favorite": false}, {"id": "biblioteca", "name": "Biblioteca", "desc": "Biblioteca pessoal para organizar livros, PDFs, arquivos e leituras.", "icon": "📚", "category": "Estudos", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Biblioteca/", "color": "#8b5cf6", "favorite": false}, {"id": "receitas", "name": "Livro de Receitas", "desc": "Organize e consulte suas receitas favoritas em um só lugar.", "icon": "🍳", "category": "Receitas", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Livro-de-receitas/", "color": "#f97316", "favorite": false}];
+const APPS=[{"id": "walkie", "name": "Walkie", "desc": "Aplicativo de comunicação e conversas.", "icon": "💬", "category": "Comunicação", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Walkie/", "color": "#667eea", "favorite": false}, {"id": "calorias", "name": "Minhas Calorias", "desc": "Controle de alimentação, calorias, água e progresso.", "icon": "🍎", "category": "Saúde", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Contagem-de-calorias-/", "color": "#10b981", "favorite": false}, {"id": "devkit", "name": "DevKit", "desc": "Kit do desenvolvedor para criar, revisar e organizar PWAs.", "icon": "</>", "category": "Desenvolvimento", "folder": "Desenvolvimento", "status": "Estável", "url": "https://kaua212106.github.io/Central-de-html/", "color": "#3b82f6", "favorite": false}, {"id": "cofre", "name": "Meu Cofre", "desc": "Cofre pessoal para documentos, arquivos e informações.", "icon": "🔐", "category": "Utilidades", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Cofre-de-documentos/", "color": "#764ba2", "favorite": false}, {"id": "ritmo", "name": "Ritmo", "desc": "Hábitos, metas e acompanhamento do progresso pessoal.", "icon": "◎", "category": "Hábitos", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Ritmo/", "color": "#2ca574", "favorite": false}, {"id": "conhecimento", "name": "Meu Conhecimento", "desc": "Segundo cérebro pessoal para estudo e organização.", "icon": "🧠", "category": "Estudos", "folder": "Estudos", "status": "Estável", "url": "https://kaua212106.github.io/Meus-conhecimentos/", "color": "#8956ed", "favorite": false}, {"id": "financas", "name": "Minhas Finanças", "desc": "Controle financeiro, metas, carteira e investimentos.", "icon": "R$", "category": "Finanças", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Organiza-o-financeira/", "color": "#10b981", "favorite": false}, {"id": "agenda", "name": "Agenda de Tarefas", "desc": "Tarefas, calendário, horários e Pomodoro.", "icon": "✓", "category": "Produtividade", "folder": "Organização", "status": "Estável", "url": "https://kaua212106.github.io/Agenda-de-tarefas/", "color": "#f59e0b", "favorite": false}, {"id": "links", "name": "Central de Links", "desc": "Organize, pesquise e acesse seus links favoritos em um só lugar.", "icon": "🔗", "category": "Utilidades", "folder": "Organização", "status": "Estável", "url": "https://kaua212106.github.io/Central-de-links/", "color": "#3b82f6", "favorite": false}, {"id": "informacoes", "name": "Lista de Informações", "desc": "Organize e consulte informações importantes em um só lugar.", "icon": "🗂️", "category": "Utilidades", "folder": "Organização", "status": "Estável", "url": "https://kaua212106.github.io/Lista-de-informa-es-/", "color": "#6366f1", "favorite": false}, {"id": "filmes", "name": "Lista de Filmes", "desc": "Organize filmes, acompanhe o que já assistiu e o que quer ver.", "icon": "🎬", "category": "Entretenimento", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Lista-de-filmes/", "color": "#ef4444", "favorite": false}, {"id": "biblioteca", "name": "Biblioteca", "desc": "Biblioteca pessoal para organizar livros, PDFs, arquivos e leituras.", "icon": "📚", "category": "Estudos", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Biblioteca/", "color": "#8b5cf6", "favorite": false}, {"id": "receitas", "name": "Livro de Receitas", "desc": "Organize e consulte suas receitas favoritas em um só lugar.", "icon": "🍳", "category": "Receitas", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Livro-de-receitas/", "color": "#f97316", "favorite": false}, {"id": "curso-adm", "name": "Curso de ADM", "desc": "Curso de Administração com conteúdos e materiais para aprender e revisar.", "icon": "🎓", "category": "Estudos", "folder": "Estudos", "status": "Estável", "url": "https://kaua212106.github.io/Curso-ADM-/", "color": "#2563eb", "favorite": false}];
 const STORAGE="central-publica-v10";
 const $=id=>document.getElementById(id);
 let prefs={favorites:null,recent:[],hidden:[],dark:false,list:false,compact:false,adminPanelLocation:"home"};
@@ -1564,7 +1583,7 @@ $("installBtn").onclick=async()=>{
 
 let reg=null;
 if("serviceWorker" in navigator){
-  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=40",{updateViaCache:"none"})}catch{}})
+  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=41",{updateViaCache:"none"})}catch{}})
 }
 $("checkUpdateBtn").onclick=async()=>{if(!reg)return toast("Service worker ainda não está pronto.");try{await reg.update();toast("Verificação concluída.")}catch{toast("Não foi possível verificar.")}};
 
