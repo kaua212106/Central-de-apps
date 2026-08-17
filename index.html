@@ -803,6 +803,7 @@ const FIREBASE_SDK_VERSION="12.17.1";
 const CENTRAL_DEVICE_KEY="central-device-id-v1";
 const CENTRAL_GUARD_SESSION_KEY="central-verified-session-v2";
 const CENTRAL_OFFLINE_AUTH_KEY="central-offline-auth-v3";
+const CENTRAL_RELOAD_NOTICE_KEY="central-login-reload-needed-v1";
 const CENTRAL_ACCESS_CACHE_KEY="central-access-cache-v1";
 const CENTRAL_ACCESS_CACHE_TTL=0;
 const CENTRAL_WHATSAPP="5517992250453";
@@ -812,7 +813,6 @@ const CENTRAL_ADMIN_UIDS=[
 ];
 let centralAuth=null,centralDb=null,centralFirebaseApi=null,centralCurrentUser=null,centralUserData=null;
 let pendingRequestMap=new Map();
-let centralLoginJustCompleted=false;
 
 function centralDeviceId(){
   let id="";
@@ -1066,10 +1066,11 @@ function grantCentralAccess(user,data){
   applyAdminPanelLocation();
   unlockCentral();
 
-  if(centralLoginJustCompleted){
-    $("reloadLoginNotice").classList.add("show");
-    centralLoginJustCompleted=false;
-  }
+  try{
+    if(sessionStorage.getItem(CENTRAL_RELOAD_NOTICE_KEY)==="1"){
+      $("reloadLoginNotice").classList.add("show");
+    }
+  }catch{}
 
   if(data?.admin===true)loadAdminData();
 }
@@ -1080,10 +1081,10 @@ async function loginCentral(){
   if(!email||!password){$("authError").textContent="Preencha e-mail e senha.";return}
   try{
     $("authLoginBtn").disabled=true;
-    centralLoginJustCompleted=true;
+    try{sessionStorage.setItem(CENTRAL_RELOAD_NOTICE_KEY,"1")}catch{}
     await centralFirebaseApi.signInWithEmailAndPassword(centralAuth,email,password)
   }catch(err){
-    centralLoginJustCompleted=false;
+    try{sessionStorage.removeItem(CENTRAL_RELOAD_NOTICE_KEY)}catch{}
     $("authError").textContent=authMessage(err)
   }finally{$("authLoginBtn").disabled=false}
 }
@@ -1621,7 +1622,10 @@ $("adminPanelLocationSelect").onchange=()=>{
   applyAdminPanelLocation();
   toast(prefs.adminPanelLocation==="home"?"Painel do ADM movido para a tela inicial.":"Painel do ADM movido para Ajustes.")
 };
-$("reloadCentralBtn").onclick=()=>location.reload();
+$("reloadCentralBtn").onclick=()=>{
+  try{sessionStorage.removeItem(CENTRAL_RELOAD_NOTICE_KEY)}catch{}
+  location.reload()
+};
 $("deletePrefsBtn").onclick=deletePreferences;
 
 
@@ -1657,7 +1661,7 @@ $("installBtn").onclick=async()=>{
 
 let reg=null;
 if("serviceWorker" in navigator){
-  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=45",{updateViaCache:"none"})}catch{}})
+  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=46",{updateViaCache:"none"})}catch{}})
 }
 $("checkUpdateBtn").onclick=async()=>{if(!reg)return toast("Service worker ainda não está pronto.");try{await reg.update();toast("Verificação concluída.")}catch{toast("Não foi possível verificar.")}};
 
