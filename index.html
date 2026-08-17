@@ -230,6 +230,37 @@ body.access-verifying .copy-btn{opacity:.62}
   margin-bottom:0;
 }
 
+
+/* V4.4.1 - posição do Painel do ADM */
+.admin-location-select{
+  width:auto;
+  min-width:145px;
+  max-width:52%;
+  min-height:42px;
+  padding:9px 10px;
+  border-radius:12px;
+  font-size:11px;
+  font-weight:800;
+}
+#homeAdminSlot:empty,
+#settingsAdminSlot:empty{
+  display:none;
+}
+#homeAdminSlot:not(:empty){
+  display:block;
+  margin-bottom:12px;
+}
+#homeAdminSlot .card{
+  margin-bottom:0;
+}
+@media(max-width:390px){
+  .admin-location-select{
+    min-width:132px;
+    max-width:48%;
+    font-size:10px;
+  }
+}
+
 </style>
 </head>
 <body class="access-locked access-verifying">
@@ -293,6 +324,8 @@ body.access-verifying .copy-btn{opacity:.62}
 <main>
 <section class="page active" id="homePage">
   <div class="hero"><h2>Meus aplicativos</h2><p>Tudo que você criou, organizado em um só lugar.</p></div>
+
+  <div id="homeAdminSlot"></div>
 
   <div class="dashboard">
     <div class="dash"><b id="totalCount">13</b><small>Apps</small></div>
@@ -579,6 +612,20 @@ body.access-verifying .copy-btn{opacity:.62}
     <div class="setting-row"><div><b>Modo lista</b><small>Um aplicativo por linha.</small></div><button class="switch" id="listSwitch"><i></i></button></div>
     <div class="setting-row"><div><b>Cards compactos</b><small>Esconde a descrição.</small></div><button class="switch" id="compactSwitch"><i></i></button></div>
   </div>
+  <div class="card" id="adminPanelLocationCard" hidden>
+    <div class="section-title"><h2>🛡 Exibição do Painel do ADM</h2><span class="tag">Somente ADM</span></div>
+    <div class="setting-row">
+      <div>
+        <b>Onde mostrar o painel</b>
+        <small>Use “Ajustes” quando quiser ver a tela inicial como um usuário comum verá.</small>
+      </div>
+      <select class="admin-location-select" id="adminPanelLocationSelect">
+        <option value="home">Tela inicial</option>
+        <option value="settings">Ajustes</option>
+      </select>
+    </div>
+  </div>
+
   <div class="card" id="firebaseSecurityCard" hidden>
     <div class="section-title"><h2>🔐 Conta e segurança</h2><span class="tag" id="securityRole">Usuário</span></div>
     <div class="security-info"><b>Conta conectada</b><small id="securityEmail">—</small></div>
@@ -586,6 +633,7 @@ body.access-verifying .copy-btn{opacity:.62}
     <button class="btn btn-neutral" id="firebaseLogoutBtn">Sair da conta</button>
   </div>
 
+  <div id="settingsAdminSlot">
   <div class="card" id="adminSecurityCard" hidden>
     <div class="section-title"><h2>🛡 Painel do ADM</h2><button class="mini-link" id="refreshRequestsBtn">Atualizar</button></div>
     <p style="font-size:11px;color:var(--muted);line-height:1.5">Gerencie solicitações, usuários e dispositivos. Negar um acesso o mantém bloqueado até você liberar manualmente.</p>
@@ -603,6 +651,8 @@ body.access-verifying .copy-btn{opacity:.62}
     <div class="admin-panel-view" id="adminBlockedView" hidden>
       <div id="blockedUsers"><div class="empty">Carregando bloqueios...</div></div>
     </div>
+  </div>
+
   </div>
 
   <div class="card">
@@ -640,7 +690,7 @@ body.access-verifying .copy-btn{opacity:.62}
 const APPS=[{"id": "walkie", "name": "Walkie", "desc": "Aplicativo de comunicação e conversas.", "icon": "💬", "category": "Comunicação", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Walkie/", "color": "#667eea", "favorite": false}, {"id": "calorias", "name": "Minhas Calorias", "desc": "Controle de alimentação, calorias, água e progresso.", "icon": "🍎", "category": "Saúde", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Contagem-de-calorias-/", "color": "#10b981", "favorite": false}, {"id": "devkit", "name": "DevKit", "desc": "Kit do desenvolvedor para criar, revisar e organizar PWAs.", "icon": "</>", "category": "Desenvolvimento", "folder": "Desenvolvimento", "status": "Estável", "url": "https://kaua212106.github.io/Central-de-html/", "color": "#3b82f6", "favorite": false}, {"id": "cofre", "name": "Meu Cofre", "desc": "Cofre pessoal para documentos, arquivos e informações.", "icon": "🔐", "category": "Utilidades", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Cofre-de-documentos/", "color": "#764ba2", "favorite": false}, {"id": "ritmo", "name": "Ritmo", "desc": "Hábitos, metas e acompanhamento do progresso pessoal.", "icon": "◎", "category": "Hábitos", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Ritmo/", "color": "#2ca574", "favorite": false}, {"id": "conhecimento", "name": "Meu Conhecimento", "desc": "Segundo cérebro pessoal para estudo e organização.", "icon": "🧠", "category": "Estudos", "folder": "Estudos", "status": "Estável", "url": "https://kaua212106.github.io/Meus-conhecimentos/", "color": "#8956ed", "favorite": false}, {"id": "financas", "name": "Minhas Finanças", "desc": "Controle financeiro, metas, carteira e investimentos.", "icon": "R$", "category": "Finanças", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Organiza-o-financeira/", "color": "#10b981", "favorite": false}, {"id": "agenda", "name": "Agenda de Tarefas", "desc": "Tarefas, calendário, horários e Pomodoro.", "icon": "✓", "category": "Produtividade", "folder": "Organização", "status": "Estável", "url": "https://kaua212106.github.io/Agenda-de-tarefas/", "color": "#f59e0b", "favorite": false}, {"id": "links", "name": "Central de Links", "desc": "Organize, pesquise e acesse seus links favoritos em um só lugar.", "icon": "🔗", "category": "Utilidades", "folder": "Organização", "status": "Estável", "url": "https://kaua212106.github.io/Central-de-links/", "color": "#3b82f6", "favorite": false}, {"id": "informacoes", "name": "Lista de Informações", "desc": "Organize e consulte informações importantes em um só lugar.", "icon": "🗂️", "category": "Utilidades", "folder": "Organização", "status": "Estável", "url": "https://kaua212106.github.io/Lista-de-informa-es-/", "color": "#6366f1", "favorite": false}, {"id": "filmes", "name": "Lista de Filmes", "desc": "Organize filmes, acompanhe o que já assistiu e o que quer ver.", "icon": "🎬", "category": "Entretenimento", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Lista-de-filmes/", "color": "#ef4444", "favorite": false}, {"id": "biblioteca", "name": "Biblioteca", "desc": "Biblioteca pessoal para organizar livros, PDFs, arquivos e leituras.", "icon": "📚", "category": "Estudos", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Biblioteca/", "color": "#8b5cf6", "favorite": false}, {"id": "receitas", "name": "Livro de Receitas", "desc": "Organize e consulte suas receitas favoritas em um só lugar.", "icon": "🍳", "category": "Receitas", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Livro-de-receitas/", "color": "#f97316", "favorite": false}];
 const STORAGE="central-publica-v10";
 const $=id=>document.getElementById(id);
-let prefs={favorites:null,recent:[],hidden:[],dark:false,list:false,compact:false};
+let prefs={favorites:null,recent:[],hidden:[],dark:false,list:false,compact:false,adminPanelLocation:"home"};
 let deferredInstall=null;
 
 const FIREBASE_SDK_VERSION="12.17.1";
@@ -777,6 +827,7 @@ async function evaluateCentralAccess(user){
   centralUserData=null;
   $("firebaseSecurityCard").hidden=true;
   $("adminSecurityCard").hidden=true;
+  $("adminPanelLocationCard").hidden=true;
 
   if(!user){
     clearCentralAccessCache();
@@ -854,6 +905,31 @@ async function evaluateCentralAccess(user){
     $("authPendingWhatsapp").href=waLink(`Olá! Não consegui validar meu acesso à Central de Apps.\nConta: ${user.email||""}\nDispositivo: ${centralDeviceId()}`);
   }
 }
+
+function applyAdminPanelLocation(){
+  const isAdmin=centralUserData?.admin===true;
+  const optionCard=$("adminPanelLocationCard");
+  const panel=$("adminSecurityCard");
+
+  if(optionCard)optionCard.hidden=!isAdmin;
+
+  if(!panel)return;
+
+  if(!isAdmin){
+    panel.hidden=true;
+    return
+  }
+
+  const location=prefs.adminPanelLocation==="settings"?"settings":"home";
+  const select=$("adminPanelLocationSelect");
+  if(select)select.value=location;
+
+  const target=location==="settings"?$("settingsAdminSlot"):$("homeAdminSlot");
+  if(target&&panel.parentElement!==target)target.appendChild(panel);
+
+  panel.hidden=false
+}
+
 function grantCentralAccess(user,data){
   centralCurrentUser=user;
   centralUserData=data||{};
@@ -861,7 +937,7 @@ function grantCentralAccess(user,data){
   $("securityEmail").textContent=user.email||"—";
   $("securityDevice").textContent=centralDeviceId();
   $("securityRole").textContent=data?.admin===true?"Administrador":"Usuário";
-  $("adminSecurityCard").hidden=data?.admin!==true;
+  applyAdminPanelLocation();
   unlockCentral();
   if(data?.admin===true)loadAdminData();
 }
@@ -1239,6 +1315,7 @@ try{
 
 if(!Array.isArray(prefs.favorites))prefs.favorites=[];
 if(!Array.isArray(prefs.hidden))prefs.hidden=[];
+if(!["home","settings"].includes(prefs.adminPanelLocation))prefs.adminPanelLocation="home";
 
 function save(){try{localStorage.setItem(STORAGE,JSON.stringify(prefs))}catch{}}
 function toast(t){const el=$("toast");el.textContent=t;el.classList.add("show");clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove("show"),1700)}
@@ -1401,13 +1478,19 @@ document.querySelectorAll("[data-category-filter]").forEach(b=>b.onclick=()=>{
 $("darkSwitch").onclick=()=>{prefs.dark=!prefs.dark;save();applyPrefs()};
 $("listSwitch").onclick=()=>{prefs.list=!prefs.list;save();applyPrefs()};
 $("compactSwitch").onclick=()=>{prefs.compact=!prefs.compact;save();applyPrefs()};
+$("adminPanelLocationSelect").onchange=()=>{
+  prefs.adminPanelLocation=$("adminPanelLocationSelect").value==="settings"?"settings":"home";
+  save();
+  applyAdminPanelLocation();
+  toast(prefs.adminPanelLocation==="home"?"Painel do ADM movido para a tela inicial.":"Painel do ADM movido para Ajustes.")
+};
 $("deletePrefsBtn").onclick=deletePreferences;
 
 
 function deletePreferences(){
   if(!confirm("Excluir todas as preferências salvas neste aparelho?"))return;
   try{localStorage.removeItem(STORAGE)}catch{}
-  prefs={favorites:[],recent:[],hidden:[],dark:false,list:false,compact:false};
+  prefs={favorites:[],recent:[],hidden:[],dark:false,list:false,compact:false,adminPanelLocation:"home"};
 
   $("searchInput").value="";
   $("folderFilter").value="Todos";
@@ -1415,6 +1498,7 @@ function deletePreferences(){
   document.querySelectorAll("[data-category-filter]").forEach(b=>b.classList.toggle("active",b.dataset.categoryFilter==="Todos"));
 
   applyPrefs();
+  applyAdminPanelLocation();
   syncFavoriteButtons();
   renderFavorites();
   renderAllApps();
@@ -1435,7 +1519,7 @@ $("installBtn").onclick=async()=>{
 
 let reg=null;
 if("serviceWorker" in navigator){
-  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=34",{updateViaCache:"none"})}catch{}})
+  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=36",{updateViaCache:"none"})}catch{}})
 }
 $("checkUpdateBtn").onclick=async()=>{if(!reg)return toast("Service worker ainda não está pronto.");try{await reg.update();toast("Verificação concluída.")}catch{toast("Não foi possível verificar.")}};
 
