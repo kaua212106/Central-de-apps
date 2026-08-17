@@ -249,7 +249,7 @@ body.access-verifying .copy-btn{opacity:.62}
       <p>Se você já possui uma conta autorizada, informe seu e-mail e sua senha para entrar.</p>
       <div class="auth-guide">
         <b>Primeiro acesso?</b>
-        <span>Digite o seu próprio e-mail, crie uma senha forte e toque em <strong>Criar solicitação</strong>. Primeiro você confirmará o e-mail; depois poderá enviar a solicitação para o ADM.</span>
+        <span>Digite o seu próprio e-mail, crie uma senha forte e toque em <strong>Criar solicitação</strong>. Na próxima tela, envie a mensagem pronta para o ADM e aguarde a aprovação.</span>
       </div>
       <input class="auth-field" id="authEmail" type="email" placeholder="Seu e-mail" autocomplete="email">
       <input class="auth-field" id="authPassword" type="password" placeholder="Sua senha" autocomplete="current-password">
@@ -261,18 +261,6 @@ body.access-verifying .copy-btn{opacity:.62}
       <button class="auth-secondary auth-forgot-btn" id="authForgotBtn">🔑 Esqueci minha senha</button>
       <a class="auth-contact" id="authWhatsapp" href="https://wa.me/5517992250453" target="_blank" rel="noopener">💬 Falar com o ADM pelo WhatsApp</a>
       <p class="auth-note">A conta só será liberada depois que o administrador aprovar o acesso.</p>
-    </div>
-
-    <div id="authVerifyView" hidden>
-      <div class="auth-status">✉️ Confirme seu e-mail</div>
-      <h2>Verificação obrigatória</h2>
-      <p id="authVerifyText">Antes de solicitar acesso, confirme que este e-mail realmente pertence a você.</p>
-      <span class="auth-device" id="authVerifyEmail"></span>
-      <button class="auth-enter" id="authVerifyResendBtn">Enviar e-mail de verificação</button>
-      <button class="auth-secondary" id="authVerifyCheckBtn">Já verifiquei meu e-mail</button>
-      <div class="auth-error" id="authVerifyError"></div>
-      <div class="auth-success" id="authVerifySuccess"></div>
-      <button class="auth-link-btn" id="authVerifyLogout">Usar outra conta</button>
     </div>
 
     <div id="authPendingView" hidden>
@@ -593,7 +581,7 @@ body.access-verifying .copy-btn{opacity:.62}
   </div>
   <div class="card" id="firebaseSecurityCard" hidden>
     <div class="section-title"><h2>🔐 Conta e segurança</h2><span class="tag" id="securityRole">Usuário</span></div>
-    <div class="security-info"><b>Conta conectada</b><small id="securityEmail">—</small><span class="security-chip ok" id="securityEmailVerified">E-mail verificado</span></div>
+    <div class="security-info"><b>Conta conectada</b><small id="securityEmail">—</small></div>
     <div class="security-info"><b>Código deste dispositivo</b><small id="securityDevice">—</small></div>
     <button class="btn btn-neutral" id="firebaseLogoutBtn">Sair da conta</button>
   </div>
@@ -679,7 +667,7 @@ function clearCentralAccessCache(){
 }
 
 function setAuthView(name){
-  const ids=["authLoadingView","authLoginView","authVerifyView","authPendingView","authConfigView"];
+  const ids=["authLoadingView","authLoginView","authPendingView","authConfigView"];
   ids.forEach(id=>$(id).hidden=id!==name);
 }
 function beginCentralVerification(){
@@ -764,56 +752,6 @@ async function validateStrongPassword(password){
   return ""
 }
 
-function showEmailVerification(user,message=""){
-  clearCentralAccessCache();
-  lockCentral();
-  setAuthView("authVerifyView");
-  $("authVerifyEmail").textContent=user?.email||"";
-  $("authVerifyText").textContent=message||"Antes de solicitar acesso, confirme que este e-mail realmente pertence a você.";
-  $("authVerifyError").textContent="";
-  $("authVerifySuccess").textContent=""
-}
-
-async function resendVerificationEmail(){
-  const user=centralAuth?.currentUser;
-  if(!user)return;
-  $("authVerifyError").textContent="";
-  $("authVerifySuccess").textContent="";
-  try{
-    $("authVerifyResendBtn").disabled=true;
-    centralAuth.languageCode="pt-BR";
-    await centralFirebaseApi.sendEmailVerification(user);
-    $("authVerifySuccess").textContent="E-mail enviado. Confira também a pasta de spam."
-  }catch(err){
-    console.error(err);
-    $("authVerifyError").textContent=authMessage(err)
-  }finally{
-    $("authVerifyResendBtn").disabled=false
-  }
-}
-
-async function checkVerifiedEmail(){
-  const user=centralAuth?.currentUser;
-  if(!user)return;
-  $("authVerifyError").textContent="";
-  try{
-    $("authVerifyCheckBtn").disabled=true;
-    await centralFirebaseApi.reload(user);
-    if(!user.emailVerified){
-      $("authVerifyError").textContent="O e-mail ainda não foi confirmado. Abra a mensagem recebida e toque no link de verificação.";
-      return
-    }
-    await user.getIdToken(true);
-    beginCentralVerification();
-    await evaluateCentralAccess(user)
-  }catch(err){
-    console.error(err);
-    $("authVerifyError").textContent="Não foi possível confirmar agora. Tente novamente."
-  }finally{
-    $("authVerifyCheckBtn").disabled=false
-  }
-}
-
 async function resetPasswordCentral(){
   const email=$("authEmail").value.trim();
   $("authError").textContent="";
@@ -851,17 +789,6 @@ async function evaluateCentralAccess(user){
 
   const api=centralFirebaseApi;
   try{
-    await api.reload(user);
-
-    if(!user.emailVerified){
-      showEmailVerification(
-        user,
-        "Confirme seu e-mail antes de criar ou enviar uma solicitação de acesso."
-      );
-      return
-    }
-
-    // Atualiza o token para que as regras do Firestore recebam email_verified=true.
     await user.getIdToken(true);
 
     const userRef=api.doc(centralDb,"usuarios",user.uid);
@@ -879,7 +806,7 @@ async function evaluateCentralAccess(user){
       if(req?.status==="negado"){
         showPending(user,"Solicitação negada","Seu pedido de acesso foi negado. Entre em contato com o ADM se precisar de uma nova análise.");
       }else{
-        showPending(user,"Conta aguardando aprovação","Seu e-mail foi confirmado. Agora envie a mensagem para o ADM e aguarde a aprovação.");
+        showPending(user,"Conta aguardando aprovação","Sua conta foi criada. Agora envie a mensagem para o ADM e aguarde a aprovação.");
       }
       return
     }
@@ -932,8 +859,6 @@ function grantCentralAccess(user,data){
   centralUserData=data||{};
   $("firebaseSecurityCard").hidden=false;
   $("securityEmail").textContent=user.email||"—";
-  $("securityEmailVerified").textContent=user.emailVerified?"E-mail verificado":"E-mail não verificado";
-  $("securityEmailVerified").className="security-chip "+(user.emailVerified?"ok":"warn");
   $("securityDevice").textContent=centralDeviceId();
   $("securityRole").textContent=data?.admin===true?"Administrador":"Usuário";
   $("adminSecurityCard").hidden=data?.admin!==true;
@@ -969,17 +894,12 @@ async function signupCentral(){
 
   try{
     $("authSignupBtn").disabled=true;
-    centralAuth.languageCode="pt-BR";
-    const cred=await centralFirebaseApi.createUserWithEmailAndPassword(centralAuth,email,password);
-    await centralFirebaseApi.sendEmailVerification(cred.user);
-    showEmailVerification(
-      cred.user,
-      "Sua conta foi criada. Enviamos um e-mail de confirmação. Confirme o endereço antes de solicitar acesso ao ADM."
-    );
-    $("authVerifySuccess").textContent="E-mail de verificação enviado."
+    await centralFirebaseApi.createUserWithEmailAndPassword(centralAuth,email,password);
   }catch(err){
     $("authError").textContent=authMessage(err)
-  }finally{$("authSignupBtn").disabled=false}
+  }finally{
+    $("authSignupBtn").disabled=false
+  }
 }
 async function loadPendingRequests(){
   if(!centralUserData?.admin)return;
@@ -1291,11 +1211,7 @@ async function initCentralAuth(){
     $("authSignupBtn").onclick=signupCentral;
     $("authForgotBtn").onclick=resetPasswordCentral;
     $("authPassword").addEventListener("keydown",e=>{if(e.key==="Enter")loginCentral()});
-
-    $("authVerifyResendBtn").onclick=resendVerificationEmail;
-    $("authVerifyCheckBtn").onclick=checkVerifiedEmail;
-    $("authVerifyLogout").onclick=logoutCentral;
-    $("authPendingLogout").onclick=logoutCentral;
+$("authPendingLogout").onclick=logoutCentral;
     $("firebaseLogoutBtn").onclick=logoutCentral;
     $("refreshRequestsBtn").onclick=loadAdminData;
     authM.onAuthStateChanged(centralAuth,user=>evaluateCentralAccess(user));
@@ -1519,7 +1435,7 @@ $("installBtn").onclick=async()=>{
 
 let reg=null;
 if("serviceWorker" in navigator){
-  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=33",{updateViaCache:"none"})}catch{}})
+  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=34",{updateViaCache:"none"})}catch{}})
 }
 $("checkUpdateBtn").onclick=async()=>{if(!reg)return toast("Service worker ainda não está pronto.");try{await reg.update();toast("Verificação concluída.")}catch{toast("Não foi possível verificar.")}};
 
