@@ -11,6 +11,12 @@
 <link rel="icon" href="icone.png">
 <link rel="apple-touch-icon" href="icone.png">
 <title>Central dos Meus Apps</title>
+<script>
+try{
+  const c=JSON.parse(localStorage.getItem("central-access-cache-v1")||"null");
+  if(c&&Number(c.expiresAt)>Date.now())document.documentElement.classList.add("central-preauthorized");
+}catch{}
+</script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
 :root{--primary:#667eea;--primary2:#764ba2;--primaryStrong:#5363dc;--green:#10b981;--orange:#f59e0b;--text:#20283a;--muted:#687187;--surface:rgba(255,255,255,.96);--soft:#f7f8fc;--border:rgba(31,41,55,.08);--shadow:0 12px 30px rgba(27,33,62,.10)}
@@ -63,6 +69,7 @@ body.list-mode .apps-grid{grid-template-columns:1fr}body.compact .app-card p{dis
 .firebase-gate{position:fixed;inset:0;z-index:10000;display:none;align-items:center;justify-content:center;padding:18px;background:linear-gradient(145deg,#667eea,#764ba2)}
 body.access-locked{overflow:hidden}
 body.access-locked .firebase-gate{display:flex}
+html.central-preauthorized body.access-locked .firebase-gate{display:none}
 .auth-box{width:min(440px,100%);max-height:calc(100dvh - 28px);overflow:auto;background:#fff;border-radius:28px;padding:24px 20px;box-shadow:0 28px 80px rgba(18,25,48,.30);text-align:center}
 .auth-logo{width:68px;height:68px;margin:0 auto 14px;border-radius:22px;display:grid;place-items:center;font-size:31px;background:linear-gradient(135deg,rgba(102,116,232,.14),rgba(118,75,162,.16));color:#5363dc}
 .auth-box h2{font-size:22px;color:#20283a;margin-bottom:7px}
@@ -521,6 +528,8 @@ let deferredInstall=null;
 
 const FIREBASE_SDK_VERSION="12.17.1";
 const CENTRAL_DEVICE_KEY="central-device-id-v1";
+const CENTRAL_ACCESS_CACHE_KEY="central-access-cache-v1";
+const CENTRAL_ACCESS_CACHE_TTL=24*60*60*1000;
 const CENTRAL_WHATSAPP="5517992250453";
 let centralAuth=null,centralDb=null,centralFirebaseApi=null,centralCurrentUser=null,centralUserData=null;
 let pendingRequestMap=new Map();
@@ -533,6 +542,21 @@ function centralDeviceId(){
     try{localStorage.setItem(CENTRAL_DEVICE_KEY,id)}catch{}
   }
   return id
+}
+
+function cacheCentralAccess(user){
+  try{
+    localStorage.setItem(CENTRAL_ACCESS_CACHE_KEY,JSON.stringify({
+      uid:user?.uid||"",
+      deviceId:centralDeviceId(),
+      expiresAt:Date.now()+CENTRAL_ACCESS_CACHE_TTL
+    }));
+    document.documentElement.classList.add("central-preauthorized")
+  }catch{}
+}
+function clearCentralAccessCache(){
+  try{localStorage.removeItem(CENTRAL_ACCESS_CACHE_KEY)}catch{}
+  document.documentElement.classList.remove("central-preauthorized")
 }
 
 function setAuthView(name){
@@ -597,6 +621,7 @@ async function evaluateCentralAccess(user){
   $("adminSecurityCard").hidden=true;
 
   if(!user){
+    clearCentralAccessCache();
     setAuthView("authLoginView");
     $("authError").textContent="";
     return
@@ -608,13 +633,16 @@ async function evaluateCentralAccess(user){
     const userSnap=await api.getDoc(userRef);
 
     if(userSnap.exists()&&userSnap.data().bloqueado===true){
+      clearCentralAccessCache();
       showPending(user,"Conta bloqueada","Este usuário foi bloqueado pelo administrador. Entre em contato com o ADM caso queira solicitar uma nova análise.");
       return
     }
 
     if(!userSnap.exists()||userSnap.data().ativo!==true){
+      clearCentralAccessCache();
       const req=await ensureAccessRequest(user,"usuario");
       if(req?.status==="negado"){
+        clearCentralAccessCache();
         showPending(user,"Solicitação negada","Seu pedido de acesso foi negado. Ele não será recriado automaticamente. Entre em contato com o ADM se precisar de uma nova análise.");
       }else{
         showPending(user,"Conta aguardando aprovação","Sua conta foi criada. Agora envie a mensagem para o ADM e aguarde a aprovação.");
@@ -637,13 +665,16 @@ async function evaluateCentralAccess(user){
     const deviceSnap=await api.getDoc(deviceRef);
 
     if(deviceSnap.exists()&&deviceSnap.data().bloqueado===true){
+      clearCentralAccessCache();
       showPending(user,"Dispositivo bloqueado","Sua conta existe, mas este celular ou navegador foi bloqueado pelo administrador.");
       return
     }
 
     if(!deviceSnap.exists()||deviceSnap.data().ativo!==true){
+      clearCentralAccessCache();
       const req=await ensureAccessRequest(user,"dispositivo");
       if(req?.status==="negado"){
+        clearCentralAccessCache();
         showPending(user,"Dispositivo não autorizado","O acesso deste dispositivo foi negado e continuará bloqueado até o ADM liberá-lo.");
       }else{
         showPending(user,"Novo dispositivo detectado","Sua conta é válida, mas este celular/navegador ainda precisa ser aprovado. Envie a mensagem pronta para o ADM.");
@@ -654,6 +685,7 @@ async function evaluateCentralAccess(user){
     grantCentralAccess(user,data)
   }catch(err){
     console.error("Verificação de acesso:",err);
+    clearCentralAccessCache();
     lockCentral();
     setAuthView("authPendingView");
     $("authPendingTitle").textContent="Não foi possível verificar o acesso";
@@ -663,6 +695,7 @@ async function evaluateCentralAccess(user){
   }
 }
 function grantCentralAccess(user,data){
+  cacheCentralAccess(user);
   centralCurrentUser=user;
   centralUserData=data||{};
   $("firebaseSecurityCard").hidden=false;
@@ -958,6 +991,13 @@ async function unblockDevice(uid,deviceId){
   }catch(err){console.error(err);toast("Não foi possível liberar o dispositivo.")}
 }
 
+async function logoutCentral(){
+  clearCentralAccessCache();
+  lockCentral();
+  setAuthView("authLoadingView");
+  if(centralAuth)await centralFirebaseApi.signOut(centralAuth)
+}
+
 async function initCentralAuth(){
   lockCentral();
   setAuthView("authLoadingView");
@@ -993,8 +1033,8 @@ async function initCentralAuth(){
     $("authLoginBtn").onclick=loginCentral;
     $("authSignupBtn").onclick=signupCentral;
     $("authPassword").addEventListener("keydown",e=>{if(e.key==="Enter")loginCentral()});
-    $("authPendingLogout").onclick=()=>authM.signOut(centralAuth);
-    $("firebaseLogoutBtn").onclick=()=>authM.signOut(centralAuth);
+    $("authPendingLogout").onclick=logoutCentral;
+    $("firebaseLogoutBtn").onclick=logoutCentral;
     $("refreshRequestsBtn").onclick=loadAdminData;
 
     authM.onAuthStateChanged(centralAuth,user=>evaluateCentralAccess(user));
@@ -1211,7 +1251,7 @@ $("installBtn").onclick=async()=>{
 
 let reg=null;
 if("serviceWorker" in navigator){
-  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=27",{updateViaCache:"none"})}catch{}})
+  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=28",{updateViaCache:"none"})}catch{}})
 }
 $("checkUpdateBtn").onclick=async()=>{if(!reg)return toast("Service worker ainda não está pronto.");try{await reg.update();toast("Verificação concluída.")}catch{toast("Não foi possível verificar.")}};
 
