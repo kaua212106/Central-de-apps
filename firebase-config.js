@@ -1,11 +1,10 @@
 window.CENTRAL_FIREBASE_CONFIG = {
-  "apiKey": "AIzaSyA8zLyzYwRv3qDIw-8H4_Tesy8iiH1haaA",
-  "authDomain": "central-de-apps.firebaseapp.com",
-  "projectId": "central-de-apps",
-  "storageBucket": "central-de-apps.firebasestorage.app",
-  "messagingSenderId": "222066712643",
-  "appId": "1:222066712643:web:130c3d5ebc5c4b935d74f6",
-  "measurementId": "G-44P6G2ZSE3"
+  apiKey: "COLE_API_KEY_AQUI",
+  authDomain: "COLE_AUTH_DOMAIN_AQUI",
+  projectId: "COLE_PROJECT_ID_AQUI",
+  storageBucket: "COLE_STORAGE_BUCKET_AQUI",
+  messagingSenderId: "COLE_MESSAGING_SENDER_ID_AQUI",
+  appId: "COLE_APP_ID_AQUI"
 };
 
 window.CENTRAL_APP_CHECK_SITE_KEY = "";
