@@ -759,6 +759,7 @@ let deferredInstall=null;
 
 const FIREBASE_SDK_VERSION="12.17.1";
 const CENTRAL_DEVICE_KEY="central-device-id-v1";
+const CENTRAL_GUARD_SESSION_KEY="central-verified-session-v2";
 const CENTRAL_ACCESS_CACHE_KEY="central-access-cache-v1";
 const CENTRAL_ACCESS_CACHE_TTL=0;
 const CENTRAL_WHATSAPP="5517992250453";
@@ -779,9 +780,20 @@ function centralDeviceId(){
   return id
 }
 
-function cacheCentralAccess(user){}
+function cacheCentralAccess(user){
+  try{
+    localStorage.setItem(CENTRAL_GUARD_SESSION_KEY,JSON.stringify({
+      uid:user?.uid||"",
+      deviceId:centralDeviceId(),
+      autorizadoEm:Date.now()
+    }))
+  }catch{}
+}
 function clearCentralAccessCache(){
-  try{localStorage.removeItem(CENTRAL_ACCESS_CACHE_KEY)}catch{}
+  try{
+    localStorage.removeItem(CENTRAL_ACCESS_CACHE_KEY);
+    localStorage.removeItem(CENTRAL_GUARD_SESSION_KEY)
+  }catch{}
 }
 
 function setAuthView(name){
@@ -999,6 +1011,7 @@ function applyAdminPanelLocation(){
 }
 
 function grantCentralAccess(user,data){
+  cacheCentralAccess(user);
   centralCurrentUser=user;
   centralUserData=data||{};
   $("firebaseSecurityCard").hidden=false;
@@ -1590,7 +1603,7 @@ $("installBtn").onclick=async()=>{
 
 let reg=null;
 if("serviceWorker" in navigator){
-  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=42",{updateViaCache:"none"})}catch{}})
+  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=43",{updateViaCache:"none"})}catch{}})
 }
 $("checkUpdateBtn").onclick=async()=>{if(!reg)return toast("Service worker ainda não está pronto.");try{await reg.update();toast("Verificação concluída.")}catch{toast("Não foi possível verificar.")}};
 
