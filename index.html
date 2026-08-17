@@ -103,6 +103,7 @@ body.access-locked .firebase-gate{display:flex}
 .admin-action{width:100%;min-height:36px;border-radius:10px;font-size:9px;font-weight:850;margin-top:7px}
 .block-btn{background:#fff1f2;color:#c83a47}
 .unblock-btn{background:#e8f5ef;color:#087443}
+.remove-access-btn{background:#fff4db;color:#a16207}
 
 
 </style>
@@ -814,7 +815,10 @@ function renderAuthorizedUsers(users){
       <small>UID: ${escapeHtml(u.id)}</small>
       ${isSelf?'<span class="admin-badge">Administrador</span>':''}
       ${devices}
-      ${isSelf?'':`<button class="admin-action block-btn" data-block-user="${escapeHtml(u.id)}">Bloquear usuário</button>`}
+      ${isSelf?'':`
+        <button class="admin-action block-btn" data-block-user="${escapeHtml(u.id)}">Bloquear usuário</button>
+        <button class="admin-action remove-access-btn" data-remove-access="${escapeHtml(u.id)}">Excluir acesso</button>
+      `}
     </div>`
   }).join("")
 }
@@ -828,6 +832,7 @@ function renderBlockedUsers(users){
         <b>${escapeHtml(u.email||u.id)}</b>
         <small>Usuário bloqueado<br>UID: ${escapeHtml(u.id)}</small>
         <button class="admin-action unblock-btn" data-unblock-user="${escapeHtml(u.id)}">Liberar usuário</button>
+        <button class="admin-action remove-access-btn" data-remove-access="${escapeHtml(u.id)}">Excluir acesso</button>
       </div>`)
     }
     (u.devices||[]).filter(d=>d.bloqueado===true).forEach(d=>{
@@ -864,6 +869,37 @@ function switchAdminTab(name){
   $("adminPendingView").hidden=name!=="pending";
   $("adminAuthorizedView").hidden=name!=="authorized";
   $("adminBlockedView").hidden=name!=="blocked"
+}
+
+async function removeUserAccess(uid){
+  if(uid===centralCurrentUser?.uid)return toast("Você não pode excluir o acesso da própria conta de ADM.");
+  if(!confirm("Excluir o acesso deste usuário? A conta de e-mail e senha continuará existindo, mas ele terá que solicitar acesso novamente."))return;
+
+  const api=centralFirebaseApi;
+  try{
+    // Remove todos os dispositivos autorizados/bloqueados desse usuário.
+    const devicesSnap=await api.getDocs(api.collection(centralDb,"usuarios",uid,"dispositivos"));
+    for(const d of devicesSnap.docs){
+      await api.deleteDoc(api.doc(centralDb,"usuarios",uid,"dispositivos",d.id));
+    }
+
+    // Remove todas as solicitações antigas para permitir uma nova solicitação limpa.
+    const rq=api.query(api.collection(centralDb,"solicitacoes"),api.where("uid","==",uid));
+    const reqSnap=await api.getDocs(rq);
+    for(const r of reqSnap.docs){
+      await api.deleteDoc(api.doc(centralDb,"solicitacoes",r.id));
+    }
+
+    // Remove apenas o documento de autorização da Central.
+    // A conta no Firebase Authentication NÃO é apagada.
+    await api.deleteDoc(api.doc(centralDb,"usuarios",uid));
+
+    toast("Acesso excluído. O usuário precisará solicitar novamente.");
+    await loadAdminData()
+  }catch(err){
+    console.error(err);
+    toast("Não foi possível excluir o acesso.")
+  }
 }
 
 async function blockUser(uid){
@@ -951,7 +987,15 @@ async function initCentralAuth(){
     $("firebaseLogoutBtn").onclick=()=>authM.signOut(centralAuth);
     $("refreshRequestsBtn").onclick=loadAdminData;
 
-    authM.onAuthStateChanged(centralAuth,user=>evaluateCentralAccess(user))
+    authM.onAuthStateChanged(centralAuth,user=>evaluateCentralAccess(user));
+
+    const centralAccessRecheck=()=>{
+      const user=centralAuth?.currentUser;
+      if(user&&document.visibilityState==="visible"&&navigator.onLine)evaluateCentralAccess(user)
+    };
+    window.addEventListener("focus",centralAccessRecheck);
+    document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")centralAccessRecheck()});
+    setInterval(centralAccessRecheck,60000)
   }catch(err){
     console.error("Firebase:",err);
     setAuthView("authConfigView");
@@ -1077,6 +1121,7 @@ document.addEventListener("click",async e=>{
   const approve=e.target.closest("[data-approve-request]");if(approve){await approveRequest(approve.dataset.approveRequest);return}
   const deny=e.target.closest("[data-deny-request]");if(deny){await denyRequest(deny.dataset.denyRequest);return}
   const blockUserBtn=e.target.closest("[data-block-user]");if(blockUserBtn){await blockUser(blockUserBtn.dataset.blockUser);return}
+  const removeAccessBtn=e.target.closest("[data-remove-access]");if(removeAccessBtn){await removeUserAccess(removeAccessBtn.dataset.removeAccess);return}
   const unblockUserBtn=e.target.closest("[data-unblock-user]");if(unblockUserBtn){await unblockUser(unblockUserBtn.dataset.unblockUser);return}
   const blockDeviceBtn=e.target.closest("[data-block-device]");if(blockDeviceBtn){await blockDevice(blockDeviceBtn.dataset.blockDevice,blockDeviceBtn.dataset.deviceId);return}
   const unblockDeviceBtn=e.target.closest("[data-unblock-device]");if(unblockDeviceBtn){await unblockDevice(unblockDeviceBtn.dataset.unblockDevice,unblockDeviceBtn.dataset.deviceId);return}
@@ -1156,7 +1201,7 @@ $("installBtn").onclick=async()=>{
 
 let reg=null;
 if("serviceWorker" in navigator){
-  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=25",{updateViaCache:"none"})}catch{}})
+  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=26",{updateViaCache:"none"})}catch{}})
 }
 $("checkUpdateBtn").onclick=async()=>{if(!reg)return toast("Service worker ainda não está pronto.");try{await reg.update();toast("Verificação concluída.")}catch{toast("Não foi possível verificar.")}};
 
