@@ -802,6 +802,7 @@ let deferredInstall=null;
 const FIREBASE_SDK_VERSION="12.17.1";
 const CENTRAL_DEVICE_KEY="central-device-id-v1";
 const CENTRAL_GUARD_SESSION_KEY="central-verified-session-v2";
+const CENTRAL_OFFLINE_AUTH_KEY="central-offline-auth-v3";
 const CENTRAL_ACCESS_CACHE_KEY="central-access-cache-v1";
 const CENTRAL_ACCESS_CACHE_TTL=0;
 const CENTRAL_WHATSAPP="5517992250453";
@@ -835,7 +836,8 @@ function cacheCentralAccess(user){
 function clearCentralAccessCache(){
   try{
     localStorage.removeItem(CENTRAL_ACCESS_CACHE_KEY);
-    localStorage.removeItem(CENTRAL_GUARD_SESSION_KEY)
+    localStorage.removeItem(CENTRAL_GUARD_SESSION_KEY);
+    localStorage.removeItem(CENTRAL_OFFLINE_AUTH_KEY)
   }catch{}
 }
 
@@ -1655,7 +1657,7 @@ $("installBtn").onclick=async()=>{
 
 let reg=null;
 if("serviceWorker" in navigator){
-  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=44",{updateViaCache:"none"})}catch{}})
+  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=45",{updateViaCache:"none"})}catch{}})
 }
 $("checkUpdateBtn").onclick=async()=>{if(!reg)return toast("Service worker ainda não está pronto.");try{await reg.update();toast("Verificação concluída.")}catch{toast("Não foi possível verificar.")}};
 
