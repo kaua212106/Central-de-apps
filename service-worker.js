@@ -1,4 +1,4 @@
-const CACHE_NAME="central-meus-apps-v11";
+const CACHE_NAME="central-meus-apps-v12";
 const FILES=["./","./index.html","./manifest.json","./icone.png"];
 
 self.addEventListener("install",event=>{
