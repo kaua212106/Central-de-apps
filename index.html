@@ -322,6 +322,78 @@ body.access-verifying .copy-btn{opacity:.62}
   font-weight:850;
 }
 
+
+/* V4.4.12 - adicionar app pelo Painel do ADM */
+.admin-add-app-wrap{
+  margin:12px 0 14px;
+  padding:12px;
+  border-radius:17px;
+  background:var(--soft);
+  border:1px solid var(--border);
+}
+.admin-add-app-wrap .btn{margin:0}
+.admin-add-app-wrap small{
+  display:block;
+  margin-top:7px;
+  color:var(--muted);
+  font-size:9px;
+  line-height:1.45;
+}
+.admin-form-label{
+  display:block;
+  margin:10px 2px 4px;
+  color:var(--muted);
+  font-size:9px;
+  font-weight:850;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+.admin-app-form-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:9px;
+}
+.admin-app-form-grid .full{grid-column:1/-1}
+.admin-app-input{
+  width:100%;
+  min-height:48px;
+  border:1px solid #e1e5ed;
+  border-radius:14px;
+  padding:11px 12px;
+  background:#f7f8fc;
+  color:#20283a;
+  font-size:12px;
+  outline:none;
+}
+textarea.admin-app-input{
+  min-height:88px;
+  resize:vertical;
+  font:inherit;
+}
+.admin-app-help{
+  display:block;
+  margin-top:8px;
+  color:var(--muted);
+  font-size:9px;
+  line-height:1.45;
+}
+.admin-app-error{
+  min-height:18px;
+  margin-top:8px;
+  color:#d14343;
+  font-size:10px;
+  font-weight:750;
+}
+body.dark .admin-app-input{
+  background:#151d2d;
+  color:#eef2ff;
+  border-color:rgba(255,255,255,.09);
+}
+@media(max-width:430px){
+  .admin-app-form-grid{grid-template-columns:1fr}
+  .admin-app-form-grid .full{grid-column:auto}
+}
+
 </style>
 </head>
 <body class="access-locked access-verifying">
@@ -738,6 +810,12 @@ body.access-verifying .copy-btn{opacity:.62}
   <div class="card" id="adminSecurityCard" hidden>
     <div class="section-title"><h2>🛡 Painel do ADM</h2><button class="mini-link" id="refreshRequestsBtn">Atualizar</button></div>
     <p style="font-size:11px;color:var(--muted);line-height:1.5">Gerencie solicitações, usuários e dispositivos. Negar um acesso o mantém bloqueado até você liberar manualmente.</p>
+
+    <div class="admin-add-app-wrap">
+      <button class="btn btn-primary" id="adminAddAppBtn">🔒 Adicionar app</button>
+      <small>Somente ADM • protegido por senha adicional.</small>
+    </div>
+
     <div class="admin-tabs">
       <button class="admin-tab active" data-admin-tab="pending">Pendentes</button>
       <button class="admin-tab" data-admin-tab="authorized">Autorizados</button>
@@ -789,6 +867,100 @@ body.access-verifying .copy-btn{opacity:.62}
   <button class="btn btn-neutral" data-go="appsPage">▦ Todos os aplicativos</button>
   <button class="btn btn-neutral" data-go="settingsPage">⚙ Ajustes</button>
 </div></div>
+
+<div class="modal" id="adminAppPasswordModal">
+  <div class="modal-box">
+    <div class="modal-title">
+      <h2>🔐 Área protegida</h2>
+      <button class="close" id="closeAdminAppPasswordModal">×</button>
+    </div>
+    <p style="font-size:11px;color:var(--muted);line-height:1.5">
+      Digite a senha para liberar o cadastro de um novo aplicativo.
+    </p>
+    <input class="admin-app-input" id="adminAppPassword" type="password" autocomplete="off" placeholder="Senha">
+    <div class="admin-app-error" id="adminAppPasswordError"></div>
+    <button class="btn btn-primary" id="unlockAddAppBtn">Desbloquear</button>
+  </div>
+</div>
+
+<div class="modal" id="addCentralAppModal">
+  <div class="modal-box" style="max-height:calc(100dvh - 28px);overflow:auto">
+    <div class="modal-title">
+      <h2>➕ Adicionar app</h2>
+      <button class="close" id="closeAddCentralAppModal">×</button>
+    </div>
+
+    <div class="admin-app-form-grid">
+      <div class="full">
+        <label class="admin-form-label" for="newCentralAppName">Nome *</label>
+        <input class="admin-app-input" id="newCentralAppName" placeholder="Ex.: Meu novo app">
+      </div>
+
+      <div class="full">
+        <label class="admin-form-label" for="newCentralAppUrl">Link *</label>
+        <input class="admin-app-input" id="newCentralAppUrl" type="url" inputmode="url" placeholder="https://kaua212106.github.io/...">
+      </div>
+
+      <div class="full">
+        <label class="admin-form-label" for="newCentralAppDesc">Descrição</label>
+        <textarea class="admin-app-input" id="newCentralAppDesc" placeholder="Descrição curta do aplicativo."></textarea>
+      </div>
+
+      <div>
+        <label class="admin-form-label" for="newCentralAppIcon">Ícone</label>
+        <input class="admin-app-input" id="newCentralAppIcon" maxlength="8" placeholder="📱">
+      </div>
+
+      <div>
+        <label class="admin-form-label" for="newCentralAppColor">Cor</label>
+        <input class="admin-app-input" id="newCentralAppColor" type="color" value="#667eea" style="padding:7px">
+      </div>
+
+      <div>
+        <label class="admin-form-label" for="newCentralAppCategory">Categoria</label>
+        <select class="admin-app-input" id="newCentralAppCategory">
+          <option>Comunicação</option>
+          <option>Saúde</option>
+          <option>Desenvolvimento</option>
+          <option>Utilidades</option>
+          <option>Receitas</option>
+          <option>Hábitos</option>
+          <option>Estudos</option>
+          <option>Entretenimento</option>
+          <option>Finanças</option>
+          <option>Produtividade</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="admin-form-label" for="newCentralAppFolder">Pasta</label>
+        <select class="admin-app-input" id="newCentralAppFolder">
+          <option>Pessoal</option>
+          <option>Desenvolvimento</option>
+          <option>Estudos</option>
+          <option>Organização</option>
+        </select>
+      </div>
+
+      <div class="full">
+        <label class="admin-form-label" for="newCentralAppStatus">Status</label>
+        <select class="admin-app-input" id="newCentralAppStatus">
+          <option>Estável</option>
+          <option>Em desenvolvimento</option>
+          <option>Teste</option>
+          <option>Pausado</option>
+        </select>
+      </div>
+    </div>
+
+    <span class="admin-app-help">
+      O app será salvo no Firebase e aparecerá para os usuários autorizados da Central.
+    </span>
+    <div class="admin-app-error" id="addCentralAppError"></div>
+    <button class="btn btn-primary" id="saveCentralAppBtn">Adicionar à Central</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="firebase-config.js"></script>
@@ -804,6 +976,8 @@ const CENTRAL_DEVICE_KEY="central-device-id-v1";
 const CENTRAL_GUARD_SESSION_KEY="central-verified-session-v2";
 const CENTRAL_OFFLINE_AUTH_KEY="central-offline-auth-v3";
 const CENTRAL_RELOAD_NOTICE_KEY="central-login-reload-needed-v1";
+const CENTRAL_CLOUD_APPS_CACHE_KEY="central-cloud-apps-v1";
+const CENTRAL_ADD_APP_PASSWORD_HASH="dbc4d5a1657ca1fafb027375b96004b971e0e7ed03670a627ade9411b3ecdc9c";
 const CENTRAL_ACCESS_CACHE_KEY="central-access-cache-v1";
 const CENTRAL_ACCESS_CACHE_TTL=0;
 const CENTRAL_WHATSAPP="5517992250453";
@@ -1072,6 +1246,7 @@ function grantCentralAccess(user,data){
     }
   }catch{}
 
+  loadCloudApps();
   if(data?.admin===true)loadAdminData();
 }
 async function loginCentral(){
@@ -1457,6 +1632,288 @@ if(!["home","settings"].includes(prefs.adminPanelLocation))prefs.adminPanelLocat
 
 function save(){try{localStorage.setItem(STORAGE,JSON.stringify(prefs))}catch{}}
 function toast(t){const el=$("toast");el.textContent=t;el.classList.add("show");clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove("show"),1700)}
+
+function validCentralAppColor(color){
+  return /^#[0-9a-fA-F]{6}$/.test(String(color||"")) ? color : "#667eea"
+}
+
+async function sha256Hex(value){
+  const bytes=new TextEncoder().encode(String(value||""));
+  const digest=await crypto.subtle.digest("SHA-256",bytes);
+  return Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,"0")).join("")
+}
+
+function normalizeCloudApp(id,data){
+  if(!data||data.ativo===false)return null;
+
+  const name=String(data.name||"").trim();
+  const url=String(data.url||"").trim();
+
+  if(!name||!/^https?:\/\//i.test(url))return null;
+
+  return {
+    id:String(id),
+    name,
+    desc:String(data.desc||"").trim(),
+    icon:String(data.icon||"📱").trim()||"📱",
+    category:String(data.category||"Utilidades"),
+    folder:String(data.folder||"Pessoal"),
+    status:String(data.status||"Estável"),
+    url,
+    color:validCentralAppColor(data.color),
+    favorite:false,
+    _cloud:true
+  }
+}
+
+function createCloudAppCard(app){
+  const card=document.createElement("article");
+  card.className="app-card";
+  card.dataset.id=app.id;
+  card.dataset.name=(app.name||"").toLowerCase();
+  card.dataset.category=app.category;
+  card.dataset.folder=app.folder;
+  card.dataset.status=app.status;
+  card.dataset.cloudApp="1";
+  card.style.setProperty("--app-color",validCentralAppColor(app.color));
+
+  const statusClass=app.status==="Estável"?" status-estavel":"";
+
+  card.innerHTML=`
+    <div class="app-head">
+      <div class="app-icon">${escapeHtml(app.icon||"📱")}</div>
+      <button class="fav-btn" data-fav="${escapeHtml(app.id)}" aria-label="Favoritar">☆</button>
+    </div>
+    <h3>${escapeHtml(app.name)}</h3>
+    <p>${escapeHtml(app.desc||"Aplicativo adicionado pela Central.")}</p>
+    <div class="tags">
+      <span class="tag">${escapeHtml(app.category)}</span>
+      <span class="tag">${escapeHtml(app.folder)}</span>
+      <span class="tag${statusClass}">${escapeHtml(app.status)}</span>
+    </div>
+    <div class="app-actions">
+      <a class="open-btn" data-open="${escapeHtml(app.id)}" href="${escapeHtml(app.url)}">Abrir</a>
+      <button class="copy-btn" data-copy="${escapeHtml(app.url)}" aria-label="Copiar link">⧉</button>
+      <button class="hide-btn" data-hide-app="${escapeHtml(app.id)}" aria-label="Ocultar da tela inicial">👁</button>
+    </div>`;
+
+  return card
+}
+
+function readCachedCloudApps(){
+  try{
+    const raw=localStorage.getItem(CENTRAL_CLOUD_APPS_CACHE_KEY);
+    if(!raw)return [];
+    const arr=JSON.parse(raw);
+    return Array.isArray(arr)?arr:[]
+  }catch{return []}
+}
+
+function writeCachedCloudApps(apps){
+  try{localStorage.setItem(CENTRAL_CLOUD_APPS_CACHE_KEY,JSON.stringify(apps))}catch{}
+}
+
+function applyCloudApps(apps){
+  document.querySelectorAll('#appsGrid [data-cloud-app="1"]').forEach(el=>el.remove());
+
+  for(let i=APPS.length-1;i>=0;i--){
+    if(APPS[i]?._cloud)APPS.splice(i,1)
+  }
+
+  apps.forEach(app=>{
+    if(!app||APPS.some(existing=>existing.id===app.id))return;
+    APPS.push(app);
+    $("appsGrid").appendChild(createCloudAppCard(app))
+  });
+
+  syncFavoriteButtons();
+  renderFavorites();
+  renderAllApps();
+  renderRecent();
+  filterCards();
+  syncHideButtons()
+}
+
+async function loadCloudApps(){
+  const cached=readCachedCloudApps().map(a=>normalizeCloudApp(a.id,a)).filter(Boolean);
+  if(cached.length)applyCloudApps(cached);
+
+  if(!centralDb||!centralFirebaseApi||!centralCurrentUser)return;
+
+  try{
+    const api=centralFirebaseApi;
+    const snap=await api.getDocs(api.collection(centralDb,"aplicativos"));
+    const fresh=[];
+
+    snap.forEach(docSnap=>{
+      const app=normalizeCloudApp(docSnap.id,docSnap.data());
+      if(app)fresh.push(app)
+    });
+
+    fresh.sort((a,b)=>a.name.localeCompare(b.name,"pt-BR"));
+    writeCachedCloudApps(fresh);
+    applyCloudApps(fresh)
+  }catch(err){
+    console.error("Apps do Firebase:",err)
+  }
+}
+
+function closeAdminAppPasswordModal(){
+  $("adminAppPasswordModal").classList.remove("open");
+  $("adminAppPassword").value="";
+  $("adminAppPasswordError").textContent=""
+}
+
+function closeAddCentralAppModal(){
+  $("addCentralAppModal").classList.remove("open");
+  $("addCentralAppError").textContent=""
+}
+
+function openAdminAppPasswordModal(){
+  if(centralUserData?.admin!==true){
+    return toast("Apenas administradores podem adicionar apps.")
+  }
+
+  if(!navigator.onLine){
+    return toast("Conecte-se à internet para adicionar um app.")
+  }
+
+  $("adminAppPassword").value="";
+  $("adminAppPasswordError").textContent="";
+  $("adminAppPasswordModal").classList.add("open");
+  setTimeout(()=>$("adminAppPassword").focus(),80)
+}
+
+async function unlockAddCentralApp(){
+  if(centralUserData?.admin!==true){
+    closeAdminAppPasswordModal();
+    return toast("Apenas administradores podem adicionar apps.")
+  }
+
+  const password=$("adminAppPassword").value;
+  $("adminAppPasswordError").textContent="";
+
+  if(!password){
+    $("adminAppPasswordError").textContent="Digite a senha.";
+    return
+  }
+
+  try{
+    $("unlockAddAppBtn").disabled=true;
+    const hash=await sha256Hex(password);
+
+    if(hash!==CENTRAL_ADD_APP_PASSWORD_HASH){
+      $("adminAppPasswordError").textContent="Senha incorreta.";
+      return
+    }
+
+    closeAdminAppPasswordModal();
+    $("addCentralAppModal").classList.add("open");
+    setTimeout(()=>$("newCentralAppName").focus(),80)
+  }catch(err){
+    console.error("Senha adicionar app:",err);
+    $("adminAppPasswordError").textContent="Não foi possível validar a senha."
+  }finally{
+    $("unlockAddAppBtn").disabled=false
+  }
+}
+
+function clearCentralAppForm(){
+  $("newCentralAppName").value="";
+  $("newCentralAppUrl").value="";
+  $("newCentralAppDesc").value="";
+  $("newCentralAppIcon").value="";
+  $("newCentralAppColor").value="#667eea";
+  $("newCentralAppCategory").value="Utilidades";
+  $("newCentralAppFolder").value="Pessoal";
+  $("newCentralAppStatus").value="Estável";
+  $("addCentralAppError").textContent=""
+}
+
+function centralAppSlug(name){
+  return String(name||"app")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g,"-")
+    .replace(/^-+|-+$/g,"")
+    .slice(0,42)||"app"
+}
+
+async function saveNewCentralApp(){
+  if(centralUserData?.admin!==true){
+    return toast("Apenas administradores podem adicionar apps.")
+  }
+
+  if(!navigator.onLine){
+    return toast("Conecte-se à internet para adicionar um app.")
+  }
+
+  const name=$("newCentralAppName").value.trim();
+  const url=$("newCentralAppUrl").value.trim();
+  const desc=$("newCentralAppDesc").value.trim();
+  const icon=$("newCentralAppIcon").value.trim()||"📱";
+  const color=validCentralAppColor($("newCentralAppColor").value);
+  const category=$("newCentralAppCategory").value;
+  const folder=$("newCentralAppFolder").value;
+  const status=$("newCentralAppStatus").value;
+
+  $("addCentralAppError").textContent="";
+
+  if(!name||!url){
+    $("addCentralAppError").textContent="Preencha pelo menos o nome e o link.";
+    return
+  }
+
+  let parsedUrl;
+  try{parsedUrl=new URL(url)}catch{}
+
+  if(!parsedUrl||!["http:","https:"].includes(parsedUrl.protocol)){
+    $("addCentralAppError").textContent="Digite um link válido começando com http:// ou https://.";
+    return
+  }
+
+  const duplicate=APPS.some(a=>
+    a.name.trim().toLowerCase()===name.toLowerCase() ||
+    a.url.replace(/\/+$/,"")===parsedUrl.href.replace(/\/+$/,"")
+  );
+
+  if(duplicate){
+    $("addCentralAppError").textContent="Esse app ou link já existe na Central.";
+    return
+  }
+
+  try{
+    $("saveCentralAppBtn").disabled=true;
+    const api=centralFirebaseApi;
+    const id=`${centralAppSlug(name)}-${Date.now().toString(36)}`;
+
+    await api.setDoc(api.doc(centralDb,"aplicativos",id),{
+      name,
+      url:parsedUrl.href,
+      desc,
+      icon,
+      color,
+      category,
+      folder,
+      status,
+      ativo:true,
+      criadoPor:centralCurrentUser.uid,
+      criadoEm:api.serverTimestamp()
+    });
+
+    closeAddCentralAppModal();
+    clearCentralAppForm();
+    await loadCloudApps();
+    toast("App adicionado à Central.")
+  }catch(err){
+    console.error("Adicionar app:",err);
+    $("addCentralAppError").textContent="Não foi possível adicionar. Verifique as regras do Firebase."
+  }finally{
+    $("saveCentralAppBtn").disabled=false
+  }
+}
+
 function appById(id){return APPS.find(a=>a.id===id)}
 function go(id){
   document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id===id));
@@ -1622,6 +2079,24 @@ $("adminPanelLocationSelect").onchange=()=>{
   applyAdminPanelLocation();
   toast(prefs.adminPanelLocation==="home"?"Painel do ADM movido para a tela inicial.":"Painel do ADM movido para Ajustes.")
 };
+$("adminAddAppBtn").onclick=openAdminAppPasswordModal;
+$("closeAdminAppPasswordModal").onclick=closeAdminAppPasswordModal;
+$("closeAddCentralAppModal").onclick=closeAddCentralAppModal;
+$("unlockAddAppBtn").onclick=unlockAddCentralApp;
+$("saveCentralAppBtn").onclick=saveNewCentralApp;
+
+$("adminAppPassword").addEventListener("keydown",e=>{
+  if(e.key==="Enter")unlockAddCentralApp()
+});
+
+$("adminAppPasswordModal").addEventListener("click",e=>{
+  if(e.target===$("adminAppPasswordModal"))closeAdminAppPasswordModal()
+});
+
+$("addCentralAppModal").addEventListener("click",e=>{
+  if(e.target===$("addCentralAppModal"))closeAddCentralAppModal()
+});
+
 $("reloadCentralBtn").onclick=()=>{
   try{sessionStorage.removeItem(CENTRAL_RELOAD_NOTICE_KEY)}catch{}
   location.reload()
@@ -1661,7 +2136,7 @@ $("installBtn").onclick=async()=>{
 
 let reg=null;
 if("serviceWorker" in navigator){
-  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=46",{updateViaCache:"none"})}catch{}})
+  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=47",{updateViaCache:"none"})}catch{}})
 }
 $("checkUpdateBtn").onclick=async()=>{if(!reg)return toast("Service worker ainda não está pronto.");try{await reg.update();toast("Verificação concluída.")}catch{toast("Não foi possível verificar.")}};
 
