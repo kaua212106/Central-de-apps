@@ -813,7 +813,8 @@ body.dark .admin-app-input{
 
     <div class="admin-add-app-wrap">
       <button class="btn btn-primary" id="adminAddAppBtn">🔒 Adicionar app</button>
-      <small>Somente ADM • protegido por senha adicional.</small>
+      <button class="btn btn-neutral" id="migrateAppsBtn" style="margin-top:8px">☁️ Migrar apps atuais para o Firebase</button>
+      <small>Somente ADM • protegido por senha adicional. A migração copia os apps atuais para o Firestore sem apagá-los do HTML.</small>
     </div>
 
     <div class="admin-tabs">
@@ -978,6 +979,7 @@ const CENTRAL_OFFLINE_AUTH_KEY="central-offline-auth-v3";
 const CENTRAL_RELOAD_NOTICE_KEY="central-login-reload-needed-v1";
 const CENTRAL_CLOUD_APPS_CACHE_KEY="central-cloud-apps-v1";
 const CENTRAL_ADD_APP_PASSWORD_HASH="dbc4d5a1657ca1fafb027375b96004b971e0e7ed03670a627ade9411b3ecdc9c";
+const CENTRAL_MIGRATION_APPS=[{"id": "walkie", "name": "Walkie", "desc": "Aplicativo de comunicação e conversas.", "icon": "💬", "category": "Comunicação", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Walkie/", "color": "#667eea", "favorite": false}, {"id": "calorias", "name": "Minhas Calorias", "desc": "Controle de alimentação, calorias, água e progresso.", "icon": "🍎", "category": "Saúde", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Contagem-de-calorias-/", "color": "#10b981", "favorite": false}, {"id": "devkit", "name": "DevKit", "desc": "Kit do desenvolvedor para criar, revisar e organizar PWAs.", "icon": "</>", "category": "Desenvolvimento", "folder": "Desenvolvimento", "status": "Estável", "url": "https://kaua212106.github.io/Central-de-html/", "color": "#3b82f6", "favorite": false}, {"id": "cofre", "name": "Meu Cofre", "desc": "Cofre pessoal para documentos, arquivos e informações.", "icon": "🔐", "category": "Utilidades", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Cofre-de-documentos/", "color": "#764ba2", "favorite": false}, {"id": "ritmo", "name": "Ritmo", "desc": "Hábitos, metas e acompanhamento do progresso pessoal.", "icon": "◎", "category": "Hábitos", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Ritmo/", "color": "#2ca574", "favorite": false}, {"id": "conhecimento", "name": "Meu Conhecimento", "desc": "Segundo cérebro pessoal para estudo e organização.", "icon": "🧠", "category": "Estudos", "folder": "Estudos", "status": "Estável", "url": "https://kaua212106.github.io/Meus-conhecimentos/", "color": "#8956ed", "favorite": false}, {"id": "financas", "name": "Minhas Finanças", "desc": "Controle financeiro, metas, carteira e investimentos.", "icon": "R$", "category": "Finanças", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Organiza-o-financeira/", "color": "#10b981", "favorite": false}, {"id": "agenda", "name": "Agenda de Tarefas", "desc": "Tarefas, calendário, horários e Pomodoro.", "icon": "✓", "category": "Produtividade", "folder": "Organização", "status": "Estável", "url": "https://kaua212106.github.io/Agenda-de-tarefas/", "color": "#f59e0b", "favorite": false}, {"id": "links", "name": "Central de Links", "desc": "Organize, pesquise e acesse seus links favoritos em um só lugar.", "icon": "🔗", "category": "Utilidades", "folder": "Organização", "status": "Estável", "url": "https://kaua212106.github.io/Central-de-links/", "color": "#3b82f6", "favorite": false}, {"id": "informacoes", "name": "Lista de Informações", "desc": "Organize e consulte informações importantes em um só lugar.", "icon": "🗂️", "category": "Utilidades", "folder": "Organização", "status": "Estável", "url": "https://kaua212106.github.io/Lista-de-informa-es-/", "color": "#6366f1", "favorite": false}, {"id": "filmes", "name": "Lista de Filmes", "desc": "Organize filmes, acompanhe o que já assistiu e o que quer ver.", "icon": "🎬", "category": "Entretenimento", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Lista-de-filmes/", "color": "#ef4444", "favorite": false}, {"id": "biblioteca", "name": "Biblioteca", "desc": "Biblioteca pessoal para organizar livros, PDFs, arquivos e leituras.", "icon": "📚", "category": "Estudos", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Biblioteca/", "color": "#8b5cf6", "favorite": false}, {"id": "receitas", "name": "Livro de Receitas", "desc": "Organize e consulte suas receitas favoritas em um só lugar.", "icon": "🍳", "category": "Receitas", "folder": "Pessoal", "status": "Estável", "url": "https://kaua212106.github.io/Livro-de-receitas/", "color": "#f97316", "favorite": false}, {"id": "curso-adm", "name": "Curso de ADM", "desc": "Curso de Administração com conteúdos e materiais para aprender e revisar.", "icon": "🎓", "category": "Estudos", "folder": "Estudos", "status": "Estável", "url": "https://kaua212106.github.io/Curso-ADM-/", "color": "#2563eb", "favorite": false}];
 const CENTRAL_ACCESS_CACHE_KEY="central-access-cache-v1";
 const CENTRAL_ACCESS_CACHE_TTL=0;
 const CENTRAL_WHATSAPP="5517992250453";
@@ -1914,6 +1916,77 @@ async function saveNewCentralApp(){
   }
 }
 
+
+async function migrateCurrentAppsToFirebase(){
+  if(centralUserData?.admin!==true){
+    return toast("Apenas administradores podem migrar apps.")
+  }
+
+  if(!navigator.onLine){
+    return toast("Conecte-se à internet para fazer a migração.")
+  }
+
+  const password=prompt("Digite a senha de administração para migrar os apps:");
+  if(password===null)return;
+
+  try{
+    const hash=await sha256Hex(password);
+
+    if(hash!==CENTRAL_ADD_APP_PASSWORD_HASH){
+      return toast("Senha incorreta.")
+    }
+
+    $("migrateAppsBtn").disabled=true;
+    $("migrateAppsBtn").textContent="Migrando...";
+
+    const api=centralFirebaseApi;
+    let migrated=0;
+    let already=0;
+
+    for(const app of CENTRAL_MIGRATION_APPS){
+      const ref=api.doc(centralDb,"aplicativos",app.id);
+      const snap=await api.getDoc(ref);
+
+      if(snap.exists()){
+        already++;
+        continue
+      }
+
+      await api.setDoc(ref,{
+        name:app.name,
+        url:app.url,
+        desc:app.desc||"",
+        icon:app.icon||"📱",
+        color:validCentralAppColor(app.color),
+        category:app.category||"Utilidades",
+        folder:app.folder||"Pessoal",
+        status:app.status||"Estável",
+        ativo:true,
+        criadoPor:centralCurrentUser.uid,
+        criadoEm:api.serverTimestamp()
+      });
+
+      migrated++
+    }
+
+    await loadCloudApps();
+
+    alert(
+      `Migração concluída.\n\n`+
+      `Novos enviados ao Firebase: ${migrated}\n`+
+      `Já existentes no Firebase: ${already}\n\n`+
+      `Agora você pode publicar a versão FINAL Firestore-only.`
+    );
+
+  }catch(err){
+    console.error("Migração dos apps:",err);
+    alert("Não foi possível concluir a migração. Verifique as regras do Firestore e tente novamente.")
+  }finally{
+    $("migrateAppsBtn").disabled=false;
+    $("migrateAppsBtn").textContent="☁️ Migrar apps atuais para o Firebase"
+  }
+}
+
 function appById(id){return APPS.find(a=>a.id===id)}
 function go(id){
   document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id===id));
@@ -2080,6 +2153,7 @@ $("adminPanelLocationSelect").onchange=()=>{
   toast(prefs.adminPanelLocation==="home"?"Painel do ADM movido para a tela inicial.":"Painel do ADM movido para Ajustes.")
 };
 $("adminAddAppBtn").onclick=openAdminAppPasswordModal;
+$("migrateAppsBtn").onclick=migrateCurrentAppsToFirebase;
 $("closeAdminAppPasswordModal").onclick=closeAdminAppPasswordModal;
 $("closeAddCentralAppModal").onclick=closeAddCentralAppModal;
 $("unlockAddAppBtn").onclick=unlockAddCentralApp;
@@ -2136,7 +2210,7 @@ $("installBtn").onclick=async()=>{
 
 let reg=null;
 if("serviceWorker" in navigator){
-  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=47",{updateViaCache:"none"})}catch{}})
+  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=48",{updateViaCache:"none"})}catch{}})
 }
 $("checkUpdateBtn").onclick=async()=>{if(!reg)return toast("Service worker ainda não está pronto.");try{await reg.update();toast("Verificação concluída.")}catch{toast("Não foi possível verificar.")}};
 
