@@ -1336,8 +1336,9 @@ async function initCentralAuth(){
     centralDb=fsM.getFirestore(app);
     centralFirebaseApi={...authM,...fsM};
 
-    await authM.setPersistence(centralAuth,authM.browserLocalPersistence);
-
+    // O Firebase Web já usa persistência local por padrão.
+    // Não chamamos setPersistence() em toda inicialização, pois isso pode
+    // interferir na sessão persistida em versões recentes do SDK.
     $("authLoginBtn").onclick=loginCentral;
     $("authSignupBtn").onclick=signupCentral;
     $("authForgotBtn").onclick=resetPasswordCentral;
@@ -1866,7 +1867,7 @@ $("installBtn").onclick=async()=>{
 
 let reg=null;
 if("serviceWorker" in navigator){
-  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=50",{updateViaCache:"none"})}catch{}})
+  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=51",{updateViaCache:"none"})}catch{}})
 }
 $("checkUpdateBtn").onclick=async()=>{if(!reg)return toast("Service worker ainda não está pronto.");try{await reg.update();toast("Verificação concluída.")}catch{toast("Não foi possível verificar.")}};
 
