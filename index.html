@@ -65,12 +65,6 @@ body.access-locked{overflow:hidden}
 body.access-locked .firebase-gate{display:flex}
 body.access-verifying{overflow:auto}
 body.access-verifying .firebase-gate{display:none!important}
-body.access-verifying [data-open],
-body.access-verifying [data-copy],
-body.access-verifying .open-btn,
-body.access-verifying .copy-btn{pointer-events:none!important}
-body.access-verifying .open-btn,
-body.access-verifying .copy-btn{opacity:.62}
 .auth-box{width:min(440px,100%);max-height:calc(100dvh - 28px);overflow:auto;background:#fff;border-radius:28px;padding:24px 20px;box-shadow:0 28px 80px rgba(18,25,48,.30);text-align:center}
 .auth-logo{width:68px;height:68px;margin:0 auto 14px;border-radius:22px;display:grid;place-items:center;font-size:31px;background:linear-gradient(135deg,rgba(102,116,232,.14),rgba(118,75,162,.16));color:#5363dc}
 .auth-box h2{font-size:22px;color:#20283a;margin-bottom:7px}
@@ -1353,13 +1347,6 @@ $("authPendingLogout").onclick=logoutCentral;
     $("refreshRequestsBtn").onclick=loadAdminData;
     authM.onAuthStateChanged(centralAuth,user=>evaluateCentralAccess(user));
 
-    const centralAccessRecheck=()=>{
-      const user=centralAuth?.currentUser;
-      if(user&&document.visibilityState==="visible"&&navigator.onLine)evaluateCentralAccess(user)
-    };
-    window.addEventListener("focus",centralAccessRecheck);
-    document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")centralAccessRecheck()});
-    setInterval(centralAccessRecheck,60000)
   }catch(err){
     console.error("Firebase:",err);
     setAuthView("authConfigView");
@@ -1765,13 +1752,6 @@ function filterCards(){
   $("noResults").hidden=visible!==0
 }
 
-document.addEventListener("click",e=>{
-  if(document.body.classList.contains("access-verifying")&&e.target.closest("[data-open],[data-copy],.open-btn,.copy-btn")){
-    e.preventDefault();
-    e.stopImmediatePropagation();
-  }
-},true);
-
 document.addEventListener("click",async e=>{
   const adminTab=e.target.closest("[data-admin-tab]");if(adminTab){switchAdminTab(adminTab.dataset.adminTab);return}
   const approve=e.target.closest("[data-approve-request]");if(approve){await approveRequest(approve.dataset.approveRequest);return}
@@ -1886,7 +1866,7 @@ $("installBtn").onclick=async()=>{
 
 let reg=null;
 if("serviceWorker" in navigator){
-  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=49",{updateViaCache:"none"})}catch{}})
+  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=50",{updateViaCache:"none"})}catch{}})
 }
 $("checkUpdateBtn").onclick=async()=>{if(!reg)return toast("Service worker ainda não está pronto.");try{await reg.update();toast("Verificação concluída.")}catch{toast("Não foi possível verificar.")}};
 
