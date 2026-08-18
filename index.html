@@ -389,6 +389,43 @@ body.dark .admin-app-input{
 }
 
 </style>
+
+<style>
+/* V4.5.0 - Painel do ADM completo */
+.admin-stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:12px 0}
+.admin-stat{padding:10px 5px;border-radius:13px;background:var(--soft);border:1px solid var(--border);text-align:center}
+.admin-stat b{display:block;color:var(--primaryStrong);font-size:17px;line-height:1}
+.admin-stat small{display:block;margin-top:4px;color:var(--muted);font-size:7.5px;font-weight:850;text-transform:uppercase}
+.admin-tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}
+.admin-tools-grid .btn{margin:0;min-height:43px;font-size:10px}
+.admin-app-manager{margin:12px 0;padding:12px;border-radius:18px;background:var(--soft);border:1px solid var(--border)}
+.admin-app-manager[hidden]{display:none}
+.admin-app-manager-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:9px}
+.admin-app-manager-head b{display:block;font-size:12px}.admin-app-manager-head small{font-size:8px;color:var(--muted)}
+.admin-managed-app{padding:11px;margin-top:8px;border-radius:14px;background:var(--surface);border:1px solid var(--border)}
+.admin-managed-top{display:flex;gap:9px;align-items:flex-start}
+.admin-managed-icon{width:38px;height:38px;flex:0 0 38px;display:grid;place-items:center;border-radius:12px;background:var(--soft);font-size:19px}
+.admin-managed-main{min-width:0;flex:1}.admin-managed-main b{display:block;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.admin-managed-main small{display:block;margin-top:3px;font-size:8px;line-height:1.4;color:var(--muted);word-break:break-word}
+.admin-managed-badges{display:flex;flex-wrap:wrap;gap:4px;margin-top:7px}
+.admin-mini-badge{display:inline-flex;align-items:center;min-height:22px;padding:4px 7px;border-radius:999px;font-size:7.5px;font-weight:850;background:#eef1f7;color:#5d6679}
+.admin-mini-badge.ok{background:#e8f5ef;color:#087443}.admin-mini-badge.warn{background:#fff4db;color:#a16207}
+.admin-mini-badge.danger{background:#fff1f2;color:#c83a47}.admin-mini-badge.info{background:#eaf0ff;color:#4f46c5}
+.admin-managed-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:9px}
+.admin-managed-actions button{min-height:34px;padding:6px 4px;border-radius:9px;background:#f1f3f7;color:#4d5669;font-size:8px;font-weight:850}
+.admin-managed-actions button.danger{background:#fff1f2;color:#c83a47}.admin-managed-actions button.warn{background:#fff4db;color:#a16207}
+.admin-managed-actions button.ok{background:#e8f5ef;color:#087443}.admin-managed-actions button.info{background:#eaf0ff;color:#4f46c5}
+.admin-managed-actions button:disabled{opacity:.38}
+.app-creator{display:block;margin-top:7px;color:var(--muted);font-size:7.5px;font-weight:750}
+.maintenance-open{background:#fff4db!important;color:#9a6507!important;pointer-events:none!important}
+.admin-history-item{padding:10px 11px;margin-top:7px;border-radius:13px;background:var(--soft);border:1px solid var(--border)}
+.admin-history-item b{display:block;font-size:10px}.admin-history-item small{display:block;margin-top:3px;color:var(--muted);font-size:8px;line-height:1.45}
+.admin-form-check{min-height:48px;display:flex;align-items:center;gap:9px;padding:10px 12px;border:1px solid #e1e5ed;border-radius:14px;background:#f7f8fc;color:#465066;font-size:10px;font-weight:800}
+.admin-form-check input{width:18px;height:18px}
+body.dark .admin-form-check{background:#151d2d;border-color:rgba(255,255,255,.09);color:#eef2ff}
+@media(max-width:430px){.admin-stats-grid{grid-template-columns:repeat(2,1fr)}.admin-tools-grid{grid-template-columns:1fr}}
+</style>
+
 </head>
 <body class="access-locked access-verifying">
 
@@ -1088,6 +1125,7 @@ async function approveRequest(id){
       resolvidoPor:centralCurrentUser.uid
     });
 
+    await logAdminAction("Acesso aprovado",`Aprovou o acesso de ${d.email||d.uid}.`,"usuario",d.uid,{tipo:d.tipo,deviceId:d.deviceId});
     toast("Acesso aprovado.");
     await loadAdminData()
   }catch(err){console.error(err);toast("Não foi possível aprovar.")}
@@ -1123,6 +1161,7 @@ async function denyRequest(id){
       resolvidoPor:centralCurrentUser.uid
     });
 
+    await logAdminAction("Acesso negado",`Negou e bloqueou ${d.email||d.uid}.`,"usuario",d.uid,{tipo:d.tipo,deviceId:d.deviceId});
     toast("Acesso negado e bloqueado.");
     await loadAdminData()
   }catch(err){console.error(err);toast("Não foi possível negar.")}
@@ -1241,6 +1280,7 @@ async function removeUserAccess(uid){
     // A conta no Firebase Authentication NÃO é apagada.
     await api.deleteDoc(api.doc(centralDb,"usuarios",uid));
 
+    await logAdminAction("Acesso excluído",`Excluiu a autorização do usuário ${uid}.`,"usuario",uid);
     toast("Acesso excluído. O usuário precisará solicitar novamente.");
     await loadAdminData()
   }catch(err){
@@ -1258,6 +1298,7 @@ async function blockUser(uid){
     await api.setDoc(api.doc(centralDb,"usuarios",uid),{
       ativo:false,bloqueado:true,bloqueadoEm:api.serverTimestamp(),bloqueadoPor:centralCurrentUser.uid
     },{merge:true});
+    await logAdminAction("Usuário bloqueado",`Bloqueou o usuário ${uid}.`,"usuario",uid);
     toast("Usuário bloqueado.");
     await loadAdminData()
   }catch(err){console.error(err);toast("Não foi possível bloquear.")}
@@ -1269,6 +1310,7 @@ async function unblockUser(uid){
     await api.setDoc(api.doc(centralDb,"usuarios",uid),{
       ativo:true,bloqueado:false,atualizadoEm:api.serverTimestamp()
     },{merge:true});
+    await logAdminAction("Usuário liberado",`Liberou o usuário ${uid}.`,"usuario",uid);
     toast("Usuário liberado.");
     await loadAdminData()
   }catch(err){console.error(err);toast("Não foi possível liberar.")}
@@ -1281,6 +1323,7 @@ async function blockDevice(uid,deviceId){
     await api.setDoc(api.doc(centralDb,"usuarios",uid,"dispositivos",deviceId),{
       ativo:false,bloqueado:true,bloqueadoEm:api.serverTimestamp(),bloqueadoPor:centralCurrentUser.uid
     },{merge:true});
+    await logAdminAction("Dispositivo bloqueado",`Bloqueou o dispositivo ${deviceId}.`,"dispositivo",deviceId,{uid});
     toast("Dispositivo bloqueado.");
     await loadAdminData()
   }catch(err){console.error(err);toast("Não foi possível bloquear o dispositivo.")}
@@ -1292,6 +1335,7 @@ async function unblockDevice(uid,deviceId){
     await api.setDoc(api.doc(centralDb,"usuarios",uid,"dispositivos",deviceId),{
       ativo:true,bloqueado:false,aprovadoEm:api.serverTimestamp(),aprovadoPor:centralCurrentUser.uid
     },{merge:true});
+    await logAdminAction("Dispositivo liberado",`Liberou o dispositivo ${deviceId}.`,"dispositivo",deviceId,{uid});
     toast("Dispositivo liberado.");
     await loadAdminData()
   }catch(err){console.error(err);toast("Não foi possível liberar o dispositivo.")}
@@ -1480,7 +1524,8 @@ async function loadCloudApps(){
 
   try{
     const api=centralFirebaseApi;
-    const snap=await api.getDocs(api.collection(centralDb,"aplicativos"));
+    const q=api.query(api.collection(centralDb,"aplicativos"),api.where("ativo","==",true));
+    const snap=await api.getDocs(q);
     const fresh=[];
 
     snap.forEach(docSnap=>{
@@ -1867,12 +1912,688 @@ $("installBtn").onclick=async()=>{
 
 let reg=null;
 if("serviceWorker" in navigator){
-  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=51",{updateViaCache:"none"})}catch{}})
+  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=52",{updateViaCache:"none"})}catch{}})
 }
 $("checkUpdateBtn").onclick=async()=>{if(!reg)return toast("Service worker ainda não está pronto.");try{await reg.update();toast("Verificação concluída.")}catch{toast("Não foi possível verificar.")}};
 
 applyPrefs();syncFavoriteButtons();renderFavorites();renderAllApps();renderRecent();filterCards();syncHideButtons();
 initCentralAuth();
 </script>
+
+<script>
+(() => {
+  "use strict";
+
+  const ADMIN_NAMES = {
+    "zwSS1ZH9VGf1Ngh088umzaqf0Oa2": "Kauã",
+    "pX4jJrky58hteyAqngFID2RVqNr2": "Miguel"
+  };
+
+  let adminPurpose = "add";
+  let adminManageUnlocked = false;
+  let editingAppId = null;
+  let adminApps = [];
+  const linkStatus = new Map();
+
+  function adminName(uid,email=""){
+    return ADMIN_NAMES[uid] || email || "Administrador";
+  }
+
+  window.logAdminAction = async function(action,description,targetType="",targetId="",metadata={}){
+    if(!centralUserData?.admin || !centralDb || !centralFirebaseApi) return;
+    try{
+      const api=centralFirebaseApi;
+      await api.addDoc(api.collection(centralDb,"historico_admin"),{
+        action:String(action||"Ação administrativa"),
+        description:String(description||""),
+        targetType:String(targetType||""),
+        targetId:String(targetId||""),
+        metadata:metadata&&typeof metadata==="object"?metadata:{},
+        actorUid:centralCurrentUser?.uid||"",
+        actorEmail:centralCurrentUser?.email||"",
+        createdAt:api.serverTimestamp()
+      });
+    }catch(err){
+      console.warn("Histórico administrativo:",err);
+    }
+  };
+
+  function historyDate(value){
+    try{
+      const d=value?.toDate?.();
+      return d ? d.toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"}) : "Agora";
+    }catch{return "—"}
+  }
+
+  function enhanceAdminPanel(){
+    const panel=$("adminSecurityCard");
+    if(!panel || $("adminStatsGrid")) return;
+
+    const intro=panel.querySelector("p");
+    const addWrap=panel.querySelector(".admin-add-app-wrap");
+    const tabs=panel.querySelector(".admin-tabs");
+
+    const stats=document.createElement("div");
+    stats.className="admin-stats-grid";
+    stats.id="adminStatsGrid";
+    stats.innerHTML=`
+      <div class="admin-stat"><b id="adminStatApps">0</b><small>Apps ativos</small></div>
+      <div class="admin-stat"><b id="adminStatMaintenance">0</b><small>Manutenção</small></div>
+      <div class="admin-stat"><b id="adminStatProtected">0</b><small>Protegidos</small></div>
+      <div class="admin-stat"><b id="adminStatPending">0</b><small>Pendentes</small></div>
+      <div class="admin-stat"><b id="adminStatUsers">0</b><small>Autorizados</small></div>
+      <div class="admin-stat"><b id="adminStatBlocked">0</b><small>Bloqueados</small></div>`;
+    intro.after(stats);
+
+    addWrap.innerHTML=`
+      <button class="btn btn-primary" id="adminAddAppBtn">🔒 Adicionar app</button>
+      <div class="admin-tools-grid">
+        <button class="btn btn-neutral" id="adminManageAppsBtn">🔒 Gerenciar apps</button>
+        <button class="btn btn-neutral" id="checkAppLinksBtn">🔗 Verificar links</button>
+        <button class="btn btn-neutral" id="exportCentralBackupBtn">💾 Exportar backup</button>
+        <button class="btn btn-neutral" id="refreshAdminHistoryBtn">📜 Atualizar histórico</button>
+      </div>
+      <small>Editar/excluir apps usa a mesma senha adicional. 🔐 indica apenas se o auth-guard já foi colocado naquele app.</small>`;
+
+    const manager=document.createElement("div");
+    manager.className="admin-app-manager";
+    manager.id="adminAppManager";
+    manager.hidden=true;
+    manager.innerHTML=`
+      <div class="admin-app-manager-head">
+        <div><b>🧰 Gerenciamento dos apps</b><small>Editar, ordenar e controlar disponibilidade.</small></div>
+        <button class="mini-link" id="closeAdminAppManagerBtn">Fechar</button>
+      </div>
+      <div id="adminManagedApps"><div class="empty">Carregando apps...</div></div>`;
+    addWrap.after(manager);
+
+    tabs.style.gridTemplateColumns="repeat(4,1fr)";
+    tabs.insertAdjacentHTML("beforeend",'<button class="admin-tab" data-admin-tab="history">Histórico</button>');
+
+    const history=document.createElement("div");
+    history.className="admin-panel-view";
+    history.id="adminHistoryView";
+    history.hidden=true;
+    history.innerHTML='<div id="adminHistoryList"><div class="empty">Carregando histórico...</div></div>';
+    $("adminBlockedView").after(history);
+
+    $("adminAddAppBtn").onclick=()=>openAdminPassword("add");
+    $("adminManageAppsBtn").onclick=()=>openAdminPassword("manage");
+    $("closeAdminAppManagerBtn").onclick=()=>{$("adminAppManager").hidden=true};
+    $("checkAppLinksBtn").onclick=checkAllLinks;
+    $("exportCentralBackupBtn").onclick=exportBackup;
+    $("refreshAdminHistoryBtn").onclick=loadAdminHistory;
+  }
+
+  function enhanceAppForm(){
+    const modal=$("addCentralAppModal");
+    if(!modal || $("newCentralAppProtected")) return;
+
+    const title=modal.querySelector(".modal-title h2");
+    title.id="centralAppFormTitle";
+
+    const status=$("newCentralAppStatus").closest(".full");
+    status.insertAdjacentHTML("afterend",`
+      <div>
+        <label class="admin-form-label">Proteção individual</label>
+        <label class="admin-form-check"><input type="checkbox" id="newCentralAppProtected"> Já possui auth-guard</label>
+      </div>
+      <div>
+        <label class="admin-form-label">Modo manutenção</label>
+        <label class="admin-form-check"><input type="checkbox" id="newCentralAppMaintenance"> Mostrar como manutenção</label>
+      </div>
+      <div class="full">
+        <label class="admin-form-label">Disponibilidade</label>
+        <label class="admin-form-check"><input type="checkbox" id="newCentralAppActive" checked> App ativo e visível na Central</label>
+      </div>`);
+  }
+
+  function enhancePasswordModal(){
+    const p=$("adminAppPasswordModal")?.querySelector("p");
+    if(p) p.id="adminAppPasswordText";
+  }
+
+  const oldNormalize=normalizeCloudApp;
+  window.normalizeCloudApp=function(id,data,includeInactive=false){
+    if(!data) return null;
+    const active=data.ativo!==false;
+    if(!includeInactive && !active) return null;
+    const app=oldNormalize(id,{...data,ativo:true});
+    if(!app) return null;
+    const order=Number(data.ordem);
+    return {
+      ...app,
+      ativo:active,
+      protegido:data.protegido===true,
+      manutencao:data.manutencao===true,
+      ordem:Number.isFinite(order)?order:999999,
+      criadoPor:String(data.criadoPor||""),
+      criadoPorNome:String(data.criadoPorNome||""),
+      criadoEm:data.criadoEm||null,
+      atualizadoPor:String(data.atualizadoPor||""),
+      atualizadoEm:data.atualizadoEm||null
+    };
+  };
+
+  function creatorName(app){
+    return app.criadoPorNome || adminName(app.criadoPor,"");
+  }
+
+  function sortApps(list){
+    return [...list].sort((a,b)=>{
+      const oa=Number.isFinite(Number(a.ordem))?Number(a.ordem):999999;
+      const ob=Number.isFinite(Number(b.ordem))?Number(b.ordem):999999;
+      return oa!==ob ? oa-ob : a.name.localeCompare(b.name,"pt-BR");
+    });
+  }
+
+  window.createCloudAppCard=function(app){
+    const card=document.createElement("article");
+    card.className="app-card";
+    card.dataset.id=app.id;
+    card.dataset.name=(app.name||"").toLowerCase();
+    card.dataset.category=app.category;
+    card.dataset.folder=app.folder;
+    card.dataset.status=app.status;
+    card.dataset.cloudApp="1";
+    card.style.setProperty("--app-color",validCentralAppColor(app.color));
+
+    const statusClass=app.status==="Estável"?" status-estavel":"";
+    const open=app.manutencao
+      ? '<span class="open-btn maintenance-open">🛠 Manutenção</span>'
+      : `<a class="open-btn" data-open="${escapeHtml(app.id)}" href="${escapeHtml(app.url)}">Abrir</a>`;
+
+    card.innerHTML=`
+      <div class="app-head">
+        <div class="app-icon">${escapeHtml(app.icon||"📱")}</div>
+        <button class="fav-btn" data-fav="${escapeHtml(app.id)}" aria-label="Favoritar">☆</button>
+      </div>
+      <h3>${escapeHtml(app.name)}</h3>
+      <p>${escapeHtml(app.desc||"Aplicativo adicionado pela Central.")}</p>
+      <div class="tags">
+        <span class="tag">${escapeHtml(app.category)}</span>
+        <span class="tag">${escapeHtml(app.folder)}</span>
+        <span class="tag${statusClass}">${escapeHtml(app.manutencao?"Manutenção":app.status)}</span>
+      </div>
+      <small class="app-creator">Adicionado por ${escapeHtml(creatorName(app))}</small>
+      <div class="app-actions">
+        ${open}
+        <button class="copy-btn" data-copy="${escapeHtml(app.url)}" aria-label="Copiar link">⧉</button>
+        <button class="hide-btn" data-hide-app="${escapeHtml(app.id)}" aria-label="Ocultar da tela inicial">👁</button>
+      </div>`;
+    return card;
+  };
+
+  window.loadCloudApps=async function(){
+    const cached=readCachedCloudApps().map(a=>normalizeCloudApp(a.id,a)).filter(Boolean);
+    if(cached.length) applyCloudApps(sortApps(cached));
+
+    if(!centralDb||!centralFirebaseApi||!centralCurrentUser) return;
+    try{
+      const api=centralFirebaseApi;
+      const q=api.query(api.collection(centralDb,"aplicativos"),api.where("ativo","==",true));
+      const snap=await api.getDocs(q);
+      const fresh=snap.docs.map(d=>normalizeCloudApp(d.id,d.data())).filter(Boolean);
+      const sorted=sortApps(fresh);
+      writeCachedCloudApps(sorted);
+      applyCloudApps(sorted);
+    }catch(err){
+      console.error("Apps do Firebase:",err);
+    }
+  };
+
+  async function fetchAdminApps(){
+    if(!centralUserData?.admin) return [];
+    const api=centralFirebaseApi;
+    const snap=await api.getDocs(api.collection(centralDb,"aplicativos"));
+    return snap.docs.map(d=>normalizeCloudApp(d.id,d.data(),true)).filter(Boolean);
+  }
+
+  async function normalizeOrder(apps){
+    if(!apps.some(a=>!Number.isFinite(a.ordem)||a.ordem>=999999)) return apps;
+    const sorted=[...apps].sort((a,b)=>a.name.localeCompare(b.name,"pt-BR"));
+    const api=centralFirebaseApi;
+    const batch=api.writeBatch(centralDb);
+    sorted.forEach((app,i)=>{
+      app.ordem=(i+1)*10;
+      batch.update(api.doc(centralDb,"aplicativos",app.id),{ordem:app.ordem});
+    });
+    await batch.commit();
+    return sorted;
+  }
+
+  async function loadAdminApps(){
+    if(!centralUserData?.admin) return [];
+    try{
+      adminApps=sortApps(await normalizeOrder(await fetchAdminApps()));
+      renderAdminApps();
+      return adminApps;
+    }catch(err){
+      console.error("Gerenciar apps:",err);
+      if($("adminManagedApps")) $("adminManagedApps").innerHTML='<div class="empty">Não foi possível carregar os apps.</div>';
+      return [];
+    }
+  }
+
+  function renderAdminApps(){
+    const box=$("adminManagedApps");
+    if(!box) return;
+    const apps=sortApps(adminApps);
+    if(!apps.length){
+      box.innerHTML='<div class="empty">Nenhum app cadastrado.</div>';
+      return;
+    }
+
+    box.innerHTML=apps.map((app,index)=>{
+      const check=linkStatus.get(app.id);
+      let checkBadge='<span class="admin-mini-badge">🔗 Não verificado</span>';
+      if(check){
+        if(check.ok===true) checkBadge='<span class="admin-mini-badge ok">🔗 Link OK</span>';
+        else if(check.ok===false) checkBadge='<span class="admin-mini-badge danger">⚠ Link com erro</span>';
+        else checkBadge='<span class="admin-mini-badge warn">↗ Link externo</span>';
+      }
+      return `<div class="admin-managed-app">
+        <div class="admin-managed-top">
+          <div class="admin-managed-icon">${escapeHtml(app.icon||"📱")}</div>
+          <div class="admin-managed-main">
+            <b>${escapeHtml(app.name)}</b>
+            <small>${escapeHtml(app.url)}<br>Adicionado por ${escapeHtml(creatorName(app))}</small>
+            <div class="admin-managed-badges">
+              <span class="admin-mini-badge ${app.ativo?"ok":"danger"}">${app.ativo?"● Ativo":"○ Desativado"}</span>
+              <span class="admin-mini-badge ${app.manutencao?"warn":"ok"}">${app.manutencao?"🛠 Manutenção":"✓ Disponível"}</span>
+              <span class="admin-mini-badge ${app.protegido?"info":"warn"}">${app.protegido?"🔐 Auth-guard":"🔓 Sem auth-guard"}</span>
+              ${checkBadge}
+            </div>
+          </div>
+        </div>
+        <div class="admin-managed-actions">
+          <button class="info" data-adm-edit="${escapeHtml(app.id)}">✏️ Editar</button>
+          <button data-adm-up="${escapeHtml(app.id)}" ${index===0?"disabled":""}>↑ Subir</button>
+          <button data-adm-down="${escapeHtml(app.id)}" ${index===apps.length-1?"disabled":""}>↓ Descer</button>
+          <button class="${app.ativo?"warn":"ok"}" data-adm-active="${escapeHtml(app.id)}">${app.ativo?"⏸ Desativar":"▶ Ativar"}</button>
+          <button class="${app.manutencao?"ok":"warn"}" data-adm-maint="${escapeHtml(app.id)}">${app.manutencao?"✓ Sair manutenção":"🛠 Manutenção"}</button>
+          <button class="${app.protegido?"info":"warn"}" data-adm-protected="${escapeHtml(app.id)}">${app.protegido?"🔐 Protegido":"🔓 Marcar proteção"}</button>
+          <button class="danger" data-adm-delete="${escapeHtml(app.id)}" style="grid-column:1/-1">🗑 Excluir app</button>
+        </div>
+      </div>`;
+    }).join("");
+  }
+
+  function clearEnhancedForm(){
+    clearCentralAppForm();
+    if($("newCentralAppProtected")) $("newCentralAppProtected").checked=false;
+    if($("newCentralAppMaintenance")) $("newCentralAppMaintenance").checked=false;
+    if($("newCentralAppActive")) $("newCentralAppActive").checked=true;
+    editingAppId=null;
+  }
+
+  function openNewForm(){
+    clearEnhancedForm();
+    $("centralAppFormTitle").textContent="➕ Adicionar app";
+    $("saveCentralAppBtn").textContent="Adicionar à Central";
+    $("addCentralAppModal").classList.add("open");
+    setTimeout(()=>$("newCentralAppName").focus(),80);
+  }
+
+  function populateEdit(app){
+    editingAppId=app.id;
+    $("newCentralAppName").value=app.name||"";
+    $("newCentralAppUrl").value=app.url||"";
+    $("newCentralAppDesc").value=app.desc||"";
+    $("newCentralAppIcon").value=app.icon||"";
+    $("newCentralAppColor").value=validCentralAppColor(app.color);
+    $("newCentralAppCategory").value=app.category||"Utilidades";
+    $("newCentralAppFolder").value=app.folder||"Pessoal";
+    $("newCentralAppStatus").value=app.status||"Estável";
+    $("newCentralAppProtected").checked=app.protegido===true;
+    $("newCentralAppMaintenance").checked=app.manutencao===true;
+    $("newCentralAppActive").checked=app.ativo!==false;
+    $("centralAppFormTitle").textContent="✏️ Editar app";
+    $("saveCentralAppBtn").textContent="Salvar alterações";
+    $("addCentralAppError").textContent="";
+    $("addCentralAppModal").classList.add("open");
+  }
+
+  function openAdminPassword(purpose){
+    if(centralUserData?.admin!==true) return toast("Apenas administradores podem gerenciar apps.");
+    if(!navigator.onLine) return toast("Conecte-se à internet para gerenciar apps.");
+    adminPurpose=purpose;
+    $("adminAppPassword").value="";
+    $("adminAppPasswordError").textContent="";
+    $("adminAppPasswordText").textContent=purpose==="manage"
+      ?"Digite a senha para liberar edição, exclusão e controles dos apps."
+      :"Digite a senha para liberar o cadastro de um novo aplicativo.";
+    $("adminAppPasswordModal").classList.add("open");
+    setTimeout(()=>$("adminAppPassword").focus(),80);
+  }
+
+  window.unlockAddCentralApp=async function(){
+    if(centralUserData?.admin!==true) return;
+    const password=$("adminAppPassword").value;
+    if(!password){
+      $("adminAppPasswordError").textContent="Digite a senha.";
+      return;
+    }
+    try{
+      $("unlockAddAppBtn").disabled=true;
+      const hash=await sha256Hex(password);
+      if(hash!==CENTRAL_ADD_APP_PASSWORD_HASH){
+        $("adminAppPasswordError").textContent="Senha incorreta.";
+        return;
+      }
+      closeAdminAppPasswordModal();
+      if(adminPurpose==="manage"){
+        adminManageUnlocked=true;
+        $("adminAppManager").hidden=false;
+        await loadAdminApps();
+        toast("Gerenciamento desbloqueado.");
+      }else{
+        openNewForm();
+      }
+    }finally{
+      $("unlockAddAppBtn").disabled=false;
+    }
+  };
+
+  window.saveNewCentralApp=async function(){
+    if(centralUserData?.admin!==true) return toast("Apenas administradores podem salvar apps.");
+    if(!navigator.onLine) return toast("Conecte-se à internet para salvar um app.");
+
+    const name=$("newCentralAppName").value.trim();
+    const rawUrl=$("newCentralAppUrl").value.trim();
+    const desc=$("newCentralAppDesc").value.trim();
+    const icon=$("newCentralAppIcon").value.trim()||"📱";
+    const color=validCentralAppColor($("newCentralAppColor").value);
+    const category=$("newCentralAppCategory").value;
+    const folder=$("newCentralAppFolder").value;
+    const status=$("newCentralAppStatus").value;
+    const protegido=$("newCentralAppProtected").checked;
+    const manutencao=$("newCentralAppMaintenance").checked;
+    const ativo=$("newCentralAppActive").checked;
+
+    $("addCentralAppError").textContent="";
+    if(!name||!rawUrl){
+      $("addCentralAppError").textContent="Preencha pelo menos o nome e o link.";
+      return;
+    }
+
+    let parsed;
+    try{ parsed=new URL(rawUrl); }catch{}
+    if(!parsed||!["http:","https:"].includes(parsed.protocol)){
+      $("addCentralAppError").textContent="Digite um link válido.";
+      return;
+    }
+
+    if(!adminApps.length) await loadAdminApps();
+    const duplicate=adminApps.some(a=>a.id!==editingAppId &&
+      (a.name.toLowerCase()===name.toLowerCase() ||
+       a.url.replace(/\/+$/,"")===parsed.href.replace(/\/+$/,"")));
+    if(duplicate){
+      $("addCentralAppError").textContent="Esse app ou link já existe na Central.";
+      return;
+    }
+
+    try{
+      $("saveCentralAppBtn").disabled=true;
+      const api=centralFirebaseApi;
+
+      if(editingAppId){
+        const id=editingAppId;
+        await api.updateDoc(api.doc(centralDb,"aplicativos",id),{
+          name,url:parsed.href,desc,icon,color,category,folder,status,
+          ativo,protegido,manutencao,
+          atualizadoPor:centralCurrentUser.uid,
+          atualizadoEm:api.serverTimestamp()
+        });
+        await logAdminAction("App editado",`Editou ${name}.`,"app",id,{name});
+        toast("Alterações salvas.");
+      }else{
+        const id=`${centralAppSlug(name)}-${Date.now().toString(36)}`;
+        const nextOrder=adminApps.length?Math.max(...adminApps.map(a=>Number.isFinite(a.ordem)?a.ordem:0))+10:10;
+        await api.setDoc(api.doc(centralDb,"aplicativos",id),{
+          name,url:parsed.href,desc,icon,color,category,folder,status,
+          ativo,protegido,manutencao,ordem:nextOrder,
+          criadoPor:centralCurrentUser.uid,
+          criadoPorNome:adminName(centralCurrentUser.uid,centralCurrentUser.email),
+          criadoEm:api.serverTimestamp(),
+          atualizadoPor:centralCurrentUser.uid,
+          atualizadoEm:api.serverTimestamp()
+        });
+        await logAdminAction("App adicionado",`Adicionou ${name} à Central.`,"app",id,{name});
+        toast("App adicionado à Central.");
+      }
+
+      $("addCentralAppModal").classList.remove("open");
+      clearEnhancedForm();
+      await Promise.all([loadCloudApps(),loadAdminApps(),loadAdminStats(),loadAdminHistory()]);
+    }catch(err){
+      console.error(err);
+      $("addCentralAppError").textContent="Não foi possível salvar. Confira as regras do Firestore.";
+    }finally{
+      $("saveCentralAppBtn").disabled=false;
+    }
+  };
+
+  async function deleteApp(id){
+    if(!adminManageUnlocked) return openAdminPassword("manage");
+    const app=adminApps.find(a=>a.id===id);
+    if(!app||!confirm(`Excluir "${app.name}" da Central?`)) return;
+    try{
+      const api=centralFirebaseApi;
+      await api.deleteDoc(api.doc(centralDb,"aplicativos",id));
+      await logAdminAction("App excluído",`Excluiu ${app.name} da Central.`,"app",id,{name:app.name});
+      linkStatus.delete(id);
+      await Promise.all([loadCloudApps(),loadAdminApps(),loadAdminStats(),loadAdminHistory()]);
+      toast("App excluído.");
+    }catch(err){console.error(err);toast("Não foi possível excluir o app.")}
+  }
+
+  async function toggleField(id,field){
+    if(!adminManageUnlocked) return openAdminPassword("manage");
+    const app=adminApps.find(a=>a.id===id);
+    if(!app) return;
+    const current=field==="ativo"?app.ativo:field==="manutencao"?app.manutencao:app.protegido;
+    const value=!current;
+    const labels={
+      ativo:value?"App ativado":"App desativado",
+      manutencao:value?"Modo manutenção ativado":"Modo manutenção encerrado",
+      protegido:value?"Proteção marcada":"Proteção desmarcada"
+    };
+    try{
+      const api=centralFirebaseApi;
+      await api.updateDoc(api.doc(centralDb,"aplicativos",id),{
+        [field]:value,
+        atualizadoPor:centralCurrentUser.uid,
+        atualizadoEm:api.serverTimestamp()
+      });
+      await logAdminAction(labels[field],`${labels[field]} em ${app.name}.`,"app",id,{field,value,name:app.name});
+      await Promise.all([loadCloudApps(),loadAdminApps(),loadAdminStats(),loadAdminHistory()]);
+      toast(labels[field]);
+    }catch(err){console.error(err);toast("Não foi possível atualizar o app.")}
+  }
+
+  async function moveApp(id,dir){
+    if(!adminManageUnlocked) return openAdminPassword("manage");
+    const list=sortApps(adminApps);
+    const i=list.findIndex(a=>a.id===id), j=i+dir;
+    if(i<0||j<0||j>=list.length) return;
+    const a=list[i],b=list[j],api=centralFirebaseApi;
+    try{
+      const batch=api.writeBatch(centralDb);
+      batch.update(api.doc(centralDb,"aplicativos",a.id),{ordem:b.ordem,atualizadoPor:centralCurrentUser.uid,atualizadoEm:api.serverTimestamp()});
+      batch.update(api.doc(centralDb,"aplicativos",b.id),{ordem:a.ordem,atualizadoPor:centralCurrentUser.uid,atualizadoEm:api.serverTimestamp()});
+      await batch.commit();
+      await logAdminAction("Ordem alterada",`Moveu ${a.name} ${dir<0?"para cima":"para baixo"}.`,"app",a.id,{name:a.name});
+      await Promise.all([loadCloudApps(),loadAdminApps(),loadAdminHistory()]);
+    }catch(err){console.error(err);toast("Não foi possível alterar a ordem.")}
+  }
+
+  async function checkLink(app){
+    let timer;
+    try{
+      const url=new URL(app.url,location.href);
+      if(url.origin!==location.origin) return {ok:null};
+      const controller=new AbortController();
+      timer=setTimeout(()=>controller.abort(),8000);
+      let res;
+      try{
+        res=await fetch(url.href,{method:"HEAD",cache:"no-store",signal:controller.signal});
+      }catch{
+        res=await fetch(url.href,{method:"GET",cache:"no-store",signal:controller.signal});
+      }
+      return {ok:res.ok,status:res.status};
+    }catch{return {ok:false}}
+    finally{clearTimeout(timer)}
+  }
+
+  async function checkAllLinks(){
+    if(!centralUserData?.admin) return;
+    if(!navigator.onLine) return toast("Conecte-se à internet para verificar links.");
+    try{
+      $("checkAppLinksBtn").disabled=true;
+      $("checkAppLinksBtn").textContent="Verificando...";
+      if(!adminApps.length) await loadAdminApps();
+      let ok=0,bad=0,external=0;
+      for(const app of adminApps){
+        const result=await checkLink(app);
+        linkStatus.set(app.id,result);
+        if(result.ok===true) ok++;
+        else if(result.ok===false) bad++;
+        else external++;
+      }
+      renderAdminApps();
+      await logAdminAction("Links verificados",`Resultado: ${ok} OK, ${bad} com erro e ${external} externos.`,"central","links",{ok,bad,external});
+      toast(`${ok} OK • ${bad} com erro${external?` • ${external} externos`:""}`);
+    }finally{
+      $("checkAppLinksBtn").disabled=false;
+      $("checkAppLinksBtn").textContent="🔗 Verificar links";
+    }
+  }
+
+  async function exportBackup(){
+    if(!centralUserData?.admin) return;
+    try{
+      const apps=await fetchAdminApps();
+      const data={
+        type:"central-dos-meus-apps-backup",
+        version:"4.5.0",
+        exportedAt:new Date().toISOString(),
+        exportedBy:{uid:centralCurrentUser?.uid||"",name:adminName(centralCurrentUser?.uid,centralCurrentUser?.email),email:centralCurrentUser?.email||""},
+        apps:apps.map(a=>({
+          id:a.id,name:a.name,url:a.url,desc:a.desc,icon:a.icon,color:a.color,
+          category:a.category,folder:a.folder,status:a.status,ativo:a.ativo,
+          protegido:a.protegido,manutencao:a.manutencao,ordem:a.ordem,
+          criadoPor:a.criadoPor,criadoPorNome:a.criadoPorNome
+        })),
+        localPreferences:prefs
+      };
+      const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+      const url=URL.createObjectURL(blob),a=document.createElement("a");
+      a.href=url;a.download=`central-backup-${new Date().toISOString().slice(0,10)}.json`;
+      document.body.appendChild(a);a.click();a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),1000);
+      await logAdminAction("Backup exportado",`Exportou backup com ${apps.length} apps.`,"central","backup",{apps:apps.length});
+      toast("Backup JSON exportado.");
+    }catch(err){console.error(err);toast("Não foi possível exportar o backup.")}
+  }
+
+  async function loadAdminHistory(){
+    if(!centralUserData?.admin||!$("adminHistoryList")) return;
+    const box=$("adminHistoryList");
+    box.innerHTML='<div class="empty">Carregando histórico...</div>';
+    try{
+      const api=centralFirebaseApi;
+      const snap=await api.getDocs(api.collection(centralDb,"historico_admin"));
+      const rows=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.toMillis?.()||0)-(a.createdAt?.toMillis?.()||0)).slice(0,80);
+      box.innerHTML=rows.length?rows.map(x=>`
+        <div class="admin-history-item">
+          <b>${escapeHtml(adminName(x.actorUid,x.actorEmail))} • ${escapeHtml(x.action||"Ação")}</b>
+          <small>${escapeHtml(x.description||"")}<br>${escapeHtml(historyDate(x.createdAt))}</small>
+        </div>`).join(""):'<div class="empty">Nenhuma ação registrada ainda.</div>';
+    }catch(err){
+      console.error(err);
+      box.innerHTML='<div class="empty">Não foi possível carregar o histórico.</div>';
+    }
+  }
+
+  async function loadAdminStats(){
+    if(!centralUserData?.admin||!$("adminStatApps")) return;
+    try{
+      const api=centralFirebaseApi;
+      const [appSnap,pendingSnap,users]=await Promise.all([
+        api.getDocs(api.collection(centralDb,"aplicativos")),
+        api.getDocs(api.query(api.collection(centralDb,"solicitacoes"),api.where("status","==","pendente"))),
+        getAllUsersWithDevices()
+      ]);
+      const apps=appSnap.docs.map(d=>normalizeCloudApp(d.id,d.data(),true)).filter(Boolean);
+      $("adminStatApps").textContent=String(apps.filter(a=>a.ativo).length);
+      $("adminStatMaintenance").textContent=String(apps.filter(a=>a.ativo&&a.manutencao).length);
+      $("adminStatProtected").textContent=String(apps.filter(a=>a.protegido).length);
+      $("adminStatPending").textContent=String(pendingSnap.size);
+      $("adminStatUsers").textContent=String(users.filter(u=>u.ativo===true&&u.bloqueado!==true).length);
+      $("adminStatBlocked").textContent=String(
+        users.filter(u=>u.bloqueado===true).length+
+        users.reduce((n,u)=>n+(u.devices||[]).filter(d=>d.bloqueado===true).length,0)
+      );
+    }catch(err){console.warn("Estatísticas:",err)}
+  }
+
+  const oldLoadAdminData=loadAdminData;
+  window.loadAdminData=async function(){
+    await oldLoadAdminData();
+    if(!centralUserData?.admin) return;
+    await Promise.all([loadAdminApps(),loadAdminHistory(),loadAdminStats()]);
+  };
+
+  const oldSwitchAdminTab=switchAdminTab;
+  window.switchAdminTab=function(name){
+    oldSwitchAdminTab(name);
+    if($("adminHistoryView")) $("adminHistoryView").hidden=name!=="history";
+  };
+
+  const oldCloseAppModal=closeAddCentralAppModal;
+  window.closeAddCentralAppModal=function(){
+    oldCloseAppModal();
+    editingAppId=null;
+  };
+
+  const oldLogout=logoutCentral;
+  window.logoutCentral=async function(){
+    adminManageUnlocked=false;
+    if($("adminAppManager")) $("adminAppManager").hidden=true;
+    return oldLogout();
+  };
+
+  enhanceAdminPanel();
+  enhanceAppForm();
+  enhancePasswordModal();
+
+  $("unlockAddAppBtn").onclick=unlockAddCentralApp;
+  $("saveCentralAppBtn").onclick=saveNewCentralApp;
+  $("closeAddCentralAppModal").onclick=closeAddCentralAppModal;
+
+  $("adminManagedApps").addEventListener("click",e=>{
+    const edit=e.target.closest("[data-adm-edit]");
+    if(edit){
+      if(!adminManageUnlocked) return openAdminPassword("manage");
+      const app=adminApps.find(a=>a.id===edit.dataset.admEdit);
+      if(app) populateEdit(app);
+      return;
+    }
+    const del=e.target.closest("[data-adm-delete]");if(del)return deleteApp(del.dataset.admDelete);
+    const up=e.target.closest("[data-adm-up]");if(up)return moveApp(up.dataset.admUp,-1);
+    const down=e.target.closest("[data-adm-down]");if(down)return moveApp(down.dataset.admDown,1);
+    const active=e.target.closest("[data-adm-active]");if(active)return toggleField(active.dataset.admActive,"ativo");
+    const maint=e.target.closest("[data-adm-maint]");if(maint)return toggleField(maint.dataset.admMaint,"manutencao");
+    const prot=e.target.closest("[data-adm-protected]");if(prot)return toggleField(prot.dataset.admProtected,"protegido");
+  });
+
+  if(centralUserData?.admin){
+    loadAdminData();
+    loadCloudApps();
+  }
+})();
+</script>
+
 </body>
 </html>
