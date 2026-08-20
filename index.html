@@ -730,6 +730,15 @@ body.dark .admin-form-check{background:#151d2d;border-color:rgba(255,255,255,.09
           <option>Pausado</option>
         </select>
       </div>
+
+      <div class="full">
+        <label class="admin-form-label" for="newCentralAppDeveloper">Desenvolvido por</label>
+        <select class="admin-app-input" id="newCentralAppDeveloper">
+          <option value="">Não selecionado</option>
+          <option value="Kauã">Kauã</option>
+          <option value="Miguel">Miguel</option>
+        </select>
+      </div>
     </div>
 
     <span class="admin-app-help">
@@ -1610,6 +1619,7 @@ function clearCentralAppForm(){
   $("newCentralAppCategory").value="Utilidades";
   $("newCentralAppFolder").value="Pessoal";
   $("newCentralAppStatus").value="Estável";
+  $("newCentralAppDeveloper").value="";
   $("addCentralAppError").textContent=""
 }
 
@@ -1912,7 +1922,7 @@ $("installBtn").onclick=async()=>{
 
 let reg=null;
 if("serviceWorker" in navigator){
-  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=52",{updateViaCache:"none"})}catch{}})
+  addEventListener("load",async()=>{try{reg=await navigator.serviceWorker.register("./service-worker.js?v=54",{updateViaCache:"none"})}catch{}})
 }
 $("checkUpdateBtn").onclick=async()=>{if(!reg)return toast("Service worker ainda não está pronto.");try{await reg.update();toast("Verificação concluída.")}catch{toast("Não foi possível verificar.")}};
 
@@ -2069,6 +2079,7 @@ initCentralAuth();
       ordem:Number.isFinite(order)?order:999999,
       criadoPor:String(data.criadoPor||""),
       criadoPorNome:String(data.criadoPorNome||""),
+      desenvolvidoPor:["Kauã","Miguel"].includes(String(data.desenvolvidoPor||"")) ? String(data.desenvolvidoPor) : "",
       criadoEm:data.criadoEm||null,
       atualizadoPor:String(data.atualizadoPor||""),
       atualizadoEm:data.atualizadoEm||null
@@ -2115,7 +2126,7 @@ initCentralAuth();
         <span class="tag">${escapeHtml(app.folder)}</span>
         <span class="tag${statusClass}">${escapeHtml(app.manutencao?"Manutenção":app.status)}</span>
       </div>
-      <small class="app-creator">Adicionado por ${escapeHtml(creatorName(app))}</small>
+      ${app.desenvolvidoPor ? `<small class="app-creator">Desenvolvido por ${escapeHtml(app.desenvolvidoPor)}</small>` : ""}
       <div class="app-actions">
         ${open}
         <button class="copy-btn" data-copy="${escapeHtml(app.url)}" aria-label="Copiar link">⧉</button>
@@ -2197,7 +2208,7 @@ initCentralAuth();
           <div class="admin-managed-icon">${escapeHtml(app.icon||"📱")}</div>
           <div class="admin-managed-main">
             <b>${escapeHtml(app.name)}</b>
-            <small>${escapeHtml(app.url)}<br>Adicionado por ${escapeHtml(creatorName(app))}</small>
+            <small>${escapeHtml(app.url)}</small>
             <div class="admin-managed-badges">
               <span class="admin-mini-badge ${app.ativo?"ok":"danger"}">${app.ativo?"● Ativo":"○ Desativado"}</span>
               <span class="admin-mini-badge ${app.manutencao?"warn":"ok"}">${app.manutencao?"🛠 Manutenção":"✓ Disponível"}</span>
@@ -2245,6 +2256,7 @@ initCentralAuth();
     $("newCentralAppCategory").value=app.category||"Utilidades";
     $("newCentralAppFolder").value=app.folder||"Pessoal";
     $("newCentralAppStatus").value=app.status||"Estável";
+    $("newCentralAppDeveloper").value=app.desenvolvidoPor||"";
     $("newCentralAppProtected").checked=app.protegido===true;
     $("newCentralAppMaintenance").checked=app.manutencao===true;
     $("newCentralAppActive").checked=app.ativo!==false;
@@ -2307,6 +2319,7 @@ initCentralAuth();
     const category=$("newCentralAppCategory").value;
     const folder=$("newCentralAppFolder").value;
     const status=$("newCentralAppStatus").value;
+    const desenvolvidoPor=$("newCentralAppDeveloper").value;
     const protegido=$("newCentralAppProtected").checked;
     const manutencao=$("newCentralAppMaintenance").checked;
     const ativo=$("newCentralAppActive").checked;
@@ -2340,18 +2353,24 @@ initCentralAuth();
       if(editingAppId){
         const id=editingAppId;
         await api.updateDoc(api.doc(centralDb,"aplicativos",id),{
-          name,url:parsed.href,desc,icon,color,category,folder,status,
+          name,url:parsed.href,desc,icon,color,category,folder,status,desenvolvidoPor,
           ativo,protegido,manutencao,
           atualizadoPor:centralCurrentUser.uid,
           atualizadoEm:api.serverTimestamp()
         });
-        await logAdminAction("App editado",`Editou ${name}.`,"app",id,{name});
+        await logAdminAction(
+          "App editado",
+          `Editou ${name}.${desenvolvidoPor ? ` Desenvolvido por ${desenvolvidoPor}.` : " Sem desenvolvedor exibido."}`,
+          "app",
+          id,
+          {name,desenvolvidoPor}
+        );
         toast("Alterações salvas.");
       }else{
         const id=`${centralAppSlug(name)}-${Date.now().toString(36)}`;
         const nextOrder=adminApps.length?Math.max(...adminApps.map(a=>Number.isFinite(a.ordem)?a.ordem:0))+10:10;
         await api.setDoc(api.doc(centralDb,"aplicativos",id),{
-          name,url:parsed.href,desc,icon,color,category,folder,status,
+          name,url:parsed.href,desc,icon,color,category,folder,status,desenvolvidoPor,
           ativo,protegido,manutencao,ordem:nextOrder,
           criadoPor:centralCurrentUser.uid,
           criadoPorNome:adminName(centralCurrentUser.uid,centralCurrentUser.email),
@@ -2359,7 +2378,13 @@ initCentralAuth();
           atualizadoPor:centralCurrentUser.uid,
           atualizadoEm:api.serverTimestamp()
         });
-        await logAdminAction("App adicionado",`Adicionou ${name} à Central.`,"app",id,{name});
+        await logAdminAction(
+          "App adicionado",
+          `Adicionou ${name} à Central.${desenvolvidoPor ? ` Desenvolvido por ${desenvolvidoPor}.` : ""}`,
+          "app",
+          id,
+          {name,desenvolvidoPor}
+        );
         toast("App adicionado à Central.");
       }
 
@@ -2483,6 +2508,7 @@ initCentralAuth();
           id:a.id,name:a.name,url:a.url,desc:a.desc,icon:a.icon,color:a.color,
           category:a.category,folder:a.folder,status:a.status,ativo:a.ativo,
           protegido:a.protegido,manutencao:a.manutencao,ordem:a.ordem,
+          desenvolvidoPor:a.desenvolvidoPor||"",
           criadoPor:a.criadoPor,criadoPorNome:a.criadoPorNome
         })),
         localPreferences:prefs
