@@ -994,7 +994,7 @@ async function evaluateCentralAccess(user){
     centralUserData=data;
 
     const tokenResult=await user.getIdTokenResult(true);
-    const isAdmin=tokenResult.claims?.admin===true;
+    const isAdmin=tokenResult.claims?.admin===true || CENTRAL_ADMIN_UIDS.includes(user.uid);
 
     if(isAdmin){
       grantCentralAccess(user,{...data,admin:true});
