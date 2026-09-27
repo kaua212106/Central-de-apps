@@ -792,7 +792,7 @@ body.dark .admin-form-check{background:#151d2d;border-color:rgba(255,255,255,.09
 
 <div class="toast" id="toast"></div>
 
-<script src="firebase-config.js"></script>
+<script src="firebase-config.js?v=20260927-1"></script>
 <script>
 const APPS=[];
 const STORAGE="central-publica-v10";
@@ -800,7 +800,7 @@ const $=id=>document.getElementById(id);
 let prefs={favorites:null,recent:[],hidden:[],dark:false,list:false,compact:false,adminPanelLocation:"home"};
 let deferredInstall=null;
 
-const FIREBASE_SDK_VERSION="12.17.1";
+const FIREBASE_SDK_VERSION="12.19.0";
 const CENTRAL_DEVICE_KEY="central-device-id-v1";
 const CENTRAL_GUARD_SESSION_KEY="central-verified-session-v2";
 const CENTRAL_OFFLINE_AUTH_KEY="central-offline-auth-v3";
@@ -1445,7 +1445,14 @@ $("authPendingLogout").onclick=logoutCentral;
   }catch(err){
     console.error("Firebase:",err);
     setAuthView("authConfigView");
-    $("authConfigView").querySelector("p").innerHTML="Não foi possível iniciar o Firebase. Confira <b>firebase-config.js</b>, Authentication, Firestore e as regras de segurança."
+    const code=err?.code||"";
+    const msg=err?.message||String(err||"Erro desconhecido");
+    const safeMsg=msg.replace(/[<>&"]/g,ch=>({"<":"&lt;",">":"&gt;","&":"&amp;",'"':"&quot;"}[ch]));
+    $("authConfigView").querySelector("p").innerHTML=
+      "Não foi possível iniciar o Firebase.<br><br>"+
+      "<b>Erro:</b> "+safeMsg+
+      (code?"<br><b>Código:</b> "+code:"")+
+      "<br><br>Verifique a conexão, <b>firebase-config.js</b>, Authentication e Firestore."
   }
 }
 

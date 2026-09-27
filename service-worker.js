@@ -1,5 +1,5 @@
-const CACHE_NAME="central-meus-apps-v13";
-const FILES=["./","./index.html","./manifest.json","./icone.png"];
+const CACHE_NAME="central-meus-apps-v14";
+const FILES=["./","./index.html","./manifest.json","./icone.png","./firebase-config.js?v=20260927-1"];
 
 self.addEventListener("install",event=>{
   event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(FILES)));
